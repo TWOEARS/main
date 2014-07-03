@@ -22,7 +22,7 @@ function varargout = labeling(varargin)
 
 % Edit the above text to modify the response to help labeling
 
-% Last Modified by GUIDE v2.5 01-Jul-2014 12:26:58
+% Last Modified by GUIDE v2.5 02-Jul-2014 17:58:10
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -51,10 +51,18 @@ function labeling_OpeningFcn(hObject, eventdata, handles, varargin)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 % varargin   command line arguments to labeling (see VARARGIN)
+handles = guidata(hObject);
 
 handles.currentKey = 'nil';
 handles.player.isplaying = false;
-set( handles.soundsDirEdit, 'String', pwd );
+if exist( 'labeling_settings.mat', 'file' )
+    load( 'labeling_settings.mat', 'soundsDir' );
+    set( handles.soundsDirEdit, 'String', soundsDir );
+else
+    set( handles.soundsDirEdit, 'String', pwd );
+end
+handles.soundsDir = get( handles.soundsDirEdit, 'String' );
+updateSoundsList( handles );
 % Choose default command line output for labeling
 handles.output = hObject;
 
@@ -84,6 +92,7 @@ function labelingGuiFig_KeyPressFcn(hObject, eventdata, handles)
 %	Character: character interpretation of the key(s) that was pressed
 %	Modifier: name(s) of the modifier key(s) (i.e., control, shift) pressed
 % handles    structure with handles and user data (see GUIDATA)
+handles = guidata(hObject);
 set(hObject,'Interruptible','off');
 
 if ~strcmpi( handles.currentKey, eventdata.Key )
@@ -100,6 +109,7 @@ if ~strcmpi( handles.currentKey, eventdata.Key )
     guidata(hObject,handles);
 end
 
+
 % --- Executes on key release with focus on labelingGuiFig and none of its controls.
 function labelingGuiFig_KeyReleaseFcn(hObject, eventdata, handles)
 % hObject    handle to labelingGuiFig (see GCBO)
@@ -109,7 +119,7 @@ function labelingGuiFig_KeyReleaseFcn(hObject, eventdata, handles)
 %	Modifier: name(s) of the modifier key(s) (i.e., control, shift) released
 % handles    structure with handles and user data (see GUIDATA)
 set(hObject,'Interruptible','off');
-
+handles = guidata(hObject);
 handles.currentKey = 'nil';
 
 switch( eventdata.Key )
@@ -129,20 +139,28 @@ switch( eventdata.Key )
             handles.overrun = false;
             fprintf( 'handles.offsets{%d} = %s\n', handles.overrunCounter, mat2str( handles.offsets{handles.overrunCounter} ) );
         else
-            handles.offsets{handles.eventCounter} = [handles.offsets{handles.eventCounter} handles.player.CurrentSample];
+            if handles.player.CurrentSample == 1
+                handles.offsets{handles.eventCounter} = [handles.offsets{handles.eventCounter} handles.player.TotalSamples];
+            else
+                handles.offsets{handles.eventCounter} = [handles.offsets{handles.eventCounter} handles.player.CurrentSample];
+            end
             fprintf( 'handles.offsets{%d} = %s\n', handles.eventCounter, mat2str( handles.offsets{handles.eventCounter} ) );
-        end
-        handles.eventCounter = handles.eventCounter + 1;
-        if size( handles.onsets,2 ) < handles.eventCounter
-            handles.onsets{handles.eventCounter} = [];
-        end
-        if size( handles.offsets,2 ) < handles.eventCounter
-            handles.offsets{handles.eventCounter} = [];
+            handles.eventCounter = handles.eventCounter + 1;
+            if size( handles.onsets,2 ) < handles.eventCounter
+                handles.onsets{handles.eventCounter} = [];
+            end
+            if size( handles.offsets,2 ) < handles.eventCounter
+                handles.offsets{handles.eventCounter} = [];
+            end
         end
         guidata(hObject,handles);
         plotSound( hObject );
 end
 guidata(hObject,handles);
+set(findobj(hObject, 'Type', 'uicontrol'), 'Enable', 'off');
+drawnow;
+set(findobj(hObject, 'Type', 'uicontrol'), 'Enable', 'on');
+
 
 
 % --- Executes on button press in soundsDirButton.
@@ -150,11 +168,17 @@ function soundsDirButton_Callback(hObject, eventdata, handles)
 % hObject    handle to soundsDirButton (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+handles = guidata(hObject);
 
 handles.soundsDir = uigetdir( get( handles.soundsDirEdit, 'String' ));
 set( handles.soundsDirEdit, 'String', handles.soundsDir );
 guidata(hObject, handles);
+soundsDir = handles.soundsDir;
+save( 'labeling_settings.mat', 'soundsDir' );
 updateSoundsList( handles );
+set(findobj(hObject, 'Type', 'uicontrol'), 'Enable', 'off');
+drawnow;
+set(findobj(hObject, 'Type', 'uicontrol'), 'Enable', 'on');
 
 
 % --- Executes during object creation, after setting all properties.
@@ -175,6 +199,7 @@ function soundsList_Callback(hObject, eventdata, handles)
 % hObject    handle to soundsList (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+handles = guidata(hObject);
 
 contents = cellstr(get(hObject,'String'));
 selectedSound = regexprep( contents{get(hObject,'Value')}, '<html><b>', '' );
@@ -201,6 +226,10 @@ handles.player.StopFcn = {@playerStopped, hObject};
 handles.player.play( );
 guidata( hObject, handles );
 plotSound( hObject );
+set(findobj(hObject, 'Type', 'uicontrol'), 'Enable', 'off');
+drawnow;
+set(findobj(hObject, 'Type', 'uicontrol'), 'Enable', 'on');
+
 
 % --- Executes during object creation, after setting all properties.
 function soundsList_CreateFcn(hObject, eventdata, handles)
@@ -229,6 +258,7 @@ function soundsDirEdit_Callback(hObject, eventdata, handles)
 % hObject    handle to soundsDirEdit (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+handles = guidata(hObject);
 
 handles.soundsDir = get( hObject, 'String' );
 guidata(hObject,handles);
