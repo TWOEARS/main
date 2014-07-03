@@ -7,4 +7,6 @@ if handles.currentKey == 'l'
 end
 handles.eventCounter = 1;
 guidata( hfig, handles );
+pause(1);
+% handles.ticksPlayer.playblocking( );
 hPlayer.play();

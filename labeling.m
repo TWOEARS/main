@@ -22,7 +22,7 @@ function varargout = labeling(varargin)
 
 % Edit the above text to modify the response to help labeling
 
-% Last Modified by GUIDE v2.5 02-Jul-2014 17:58:10
+% Last Modified by GUIDE v2.5 03-Jul-2014 15:58:09
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -152,6 +152,8 @@ switch( eventdata.Key )
             if size( handles.offsets,2 ) < handles.eventCounter
                 handles.offsets{handles.eventCounter} = [];
             end
+            tout = [sprintf( 'onsets: %s\n', mat2str( double(int64(100*(cellfun(@median, handles.onsets) ./ handles.fs)))/100 ) ),  sprintf( 'offsets: %s\n', mat2str( double(int64(100*(cellfun(@median, handles.offsets) ./ handles.fs)))/100 ) )];
+            set( handles.textfield, 'String', tout );
         end
         guidata(hObject,handles);
         plotSound( hObject );
@@ -263,3 +265,39 @@ handles = guidata(hObject);
 handles.soundsDir = get( hObject, 'String' );
 guidata(hObject,handles);
 updateSoundsList( handles );
+
+
+% --- Executes on button press in calibrateButton.
+function calibrateButton_Callback(hObject, eventdata, handles)
+% hObject    handle to calibrateButton (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+handles = guidata(hObject);
+[handles.s, handles.fs] = audioread( 'calibrate.wav' );
+smeans = mean(handles.s);
+handles.s = handles.s - repmat( smeans, length(handles.s), 1);
+smax = max( max( abs( handles.s ) ) );
+handles.s = handles.s ./ smax;
+if handles.player.isplaying
+    stopPlayer( handles.player );
+end
+handles.player = [];
+handles.player = audioplayer( handles.s, handles.fs );
+handles.eventCounter = 1;
+handles.onsets = [];
+handles.offsets = [];
+handles.onsets{1} = [];
+handles.offsets{1} = [];
+handles.overrun = false;
+handles.overrunCounter = 1;
+handles.player.StopFcn = {@playerStopped, hObject};
+% [ticks, tfs] = audioread( 'ticks.wav' );
+% handles.ticksPlayer = audioplayer( ticks, tfs );
+% handles.ticksPlayer.playblocking( );
+handles.player.play( );
+guidata( hObject, handles );
+plotSound( hObject );
+guidata(hObject,handles);
+set(findobj(hObject, 'Type', 'uicontrol'), 'Enable', 'off');
+drawnow;
+set(findobj(hObject, 'Type', 'uicontrol'), 'Enable', 'on');
