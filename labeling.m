@@ -22,7 +22,7 @@ function varargout = labeling(varargin)
 
 % Edit the above text to modify the response to help labeling
 
-% Last Modified by GUIDE v2.5 03-Jul-2014 15:58:09
+% Last Modified by GUIDE v2.5 07-Jul-2014 12:46:38
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -84,32 +84,6 @@ function varargout = labeling_OutputFcn(hObject, eventdata, handles)
 varargout{1} = handles.output;
 
 
-% --- Executes on key press with focus on labelingGuiFig and none of its controls.
-function labelingGuiFig_KeyPressFcn(hObject, eventdata, handles)
-% hObject    handle to labelingGuiFig (see GCBO)
-% eventdata  structure with the following fields (see FIGURE)
-%	Key: name of the key that was pressed, in lower case
-%	Character: character interpretation of the key(s) that was pressed
-%	Modifier: name(s) of the modifier key(s) (i.e., control, shift) pressed
-% handles    structure with handles and user data (see GUIDATA)
-handles = guidata(hObject);
-set(hObject,'Interruptible','off');
-
-if ~strcmpi( handles.currentKey, eventdata.Key )
-    handles.currentKey = eventdata.Key;
-    switch( eventdata.Key )
-        case 'l'
-            if (handles.player.TotalSamples - handles.player.CurrentSample) / handles.fs < 0.1
-                handles.onsets{handles.eventCounter} = [handles.onsets{handles.eventCounter} 1];
-            else
-                handles.onsets{handles.eventCounter} = [handles.onsets{handles.eventCounter} handles.player.CurrentSample];
-            end
-            fprintf( 'handles.onsets{%d} = %s\n', handles.eventCounter, mat2str( handles.onsets{handles.eventCounter} ) );
-    end
-    guidata(hObject,handles);
-end
-
-
 % --- Executes on key release with focus on labelingGuiFig and none of its controls.
 function labelingGuiFig_KeyReleaseFcn(hObject, eventdata, handles)
 % hObject    handle to labelingGuiFig (see GCBO)
@@ -120,9 +94,8 @@ function labelingGuiFig_KeyReleaseFcn(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 set(hObject,'Interruptible','off');
 handles = guidata(hObject);
-handles.currentKey = 'nil';
 
-switch( eventdata.Key )
+switch( lower( eventdata.Key ) )
     case 's'
         if handles.player.isplaying
             stopPlayer( handles.player );
@@ -131,32 +104,21 @@ switch( eventdata.Key )
         set( handles.soundsList,'Value', get( handles.soundsList,'Value' ) + 1 );
         soundsList_Callback( handles.soundsList, [], handles );
         handles = guidata( hObject );
-    case 'l'
-        if handles.overrun
-            disp( 'overrun' );
-            disp( handles.player.TotalSamples );
-            handles.offsets{handles.overrunCounter} = [handles.offsets{handles.overrunCounter} handles.player.TotalSamples];
-            handles.overrun = false;
-            fprintf( 'handles.offsets{%d} = %s\n', handles.overrunCounter, mat2str( handles.offsets{handles.overrunCounter} ) );
+    case 'end'
+        handles = pushLabel( handles );
+        handles = popSoundStack( handles );
+    case 'return'
+        curLen = handles.sEnd - handles.sStart;
+        if curLen / handles.fs < 0.025
+            handles = pushLabel( handles );
         else
-            if handles.player.CurrentSample == 1
-                handles.offsets{handles.eventCounter} = [handles.offsets{handles.eventCounter} handles.player.TotalSamples];
-            else
-                handles.offsets{handles.eventCounter} = [handles.offsets{handles.eventCounter} handles.player.CurrentSample];
-            end
-            fprintf( 'handles.offsets{%d} = %s\n', handles.eventCounter, mat2str( handles.offsets{handles.eventCounter} ) );
-            handles.eventCounter = handles.eventCounter + 1;
-            if size( handles.onsets,2 ) < handles.eventCounter
-                handles.onsets{handles.eventCounter} = [];
-            end
-            if size( handles.offsets,2 ) < handles.eventCounter
-                handles.offsets{handles.eventCounter} = [];
-            end
-            tout = [sprintf( 'onsets: %s\n', mat2str( double(int64(100*(cellfun(@median, handles.onsets) ./ handles.fs)))/100 ) ),  sprintf( 'offsets: %s\n', mat2str( double(int64(100*(cellfun(@median, handles.offsets) ./ handles.fs)))/100 ) )];
-            set( handles.textfield, 'String', tout );
+            handles.sStack = [handles.sStack;
+                handles.sStart, handles.sStart + floor( curLen/2 );
+                handles.sStart + floor( curLen/2 ) + 1, handles.sEnd];
         end
-        guidata(hObject,handles);
-        plotSound( hObject );
+        handles = popSoundStack( handles );
+    case 'backspace'
+        handles = popSoundStack( handles );
 end
 guidata(hObject,handles);
 set(findobj(hObject, 'Type', 'uicontrol'), 'Enable', 'off');
@@ -212,20 +174,10 @@ smeans = mean(handles.s);
 handles.s = handles.s - repmat( smeans, length(handles.s), 1);
 smax = max( max( abs( handles.s ) ) );
 handles.s = handles.s ./ smax;
-if handles.player.isplaying
-    stopPlayer( handles.player );
-end
-handles.player = [];
-handles.player = audioplayer( handles.s, handles.fs );
-handles.eventCounter = 1;
+handles.sStack = [1, length(handles.s)];
 handles.onsets = [];
 handles.offsets = [];
-handles.onsets{1} = [];
-handles.offsets{1} = [];
-handles.overrun = false;
-handles.overrunCounter = 1;
-handles.player.StopFcn = {@playerStopped, hObject};
-handles.player.play( );
+handles = popSoundStack( handles );
 guidata( hObject, handles );
 plotSound( hObject );
 set(findobj(hObject, 'Type', 'uicontrol'), 'Enable', 'off');
@@ -265,39 +217,3 @@ handles = guidata(hObject);
 handles.soundsDir = get( hObject, 'String' );
 guidata(hObject,handles);
 updateSoundsList( handles );
-
-
-% --- Executes on button press in calibrateButton.
-function calibrateButton_Callback(hObject, eventdata, handles)
-% hObject    handle to calibrateButton (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-handles = guidata(hObject);
-[handles.s, handles.fs] = audioread( 'calibrate.wav' );
-smeans = mean(handles.s);
-handles.s = handles.s - repmat( smeans, length(handles.s), 1);
-smax = max( max( abs( handles.s ) ) );
-handles.s = handles.s ./ smax;
-if handles.player.isplaying
-    stopPlayer( handles.player );
-end
-handles.player = [];
-handles.player = audioplayer( handles.s, handles.fs );
-handles.eventCounter = 1;
-handles.onsets = [];
-handles.offsets = [];
-handles.onsets{1} = [];
-handles.offsets{1} = [];
-handles.overrun = false;
-handles.overrunCounter = 1;
-handles.player.StopFcn = {@playerStopped, hObject};
-% [ticks, tfs] = audioread( 'ticks.wav' );
-% handles.ticksPlayer = audioplayer( ticks, tfs );
-% handles.ticksPlayer.playblocking( );
-handles.player.play( );
-guidata( hObject, handles );
-plotSound( hObject );
-guidata(hObject,handles);
-set(findobj(hObject, 'Type', 'uicontrol'), 'Enable', 'off');
-drawnow;
-set(findobj(hObject, 'Type', 'uicontrol'), 'Enable', 'on');

@@ -11,8 +11,8 @@ end
 hold( handles.soundAxes, 'on' );
 
 for i = 1:length(handles.onsets)
-    onset = median( handles.onsets{i} ) / handles.fs;
-    offset = median( handles.offsets{i} ) / handles.fs;
+    onset = handles.onsets(i) / handles.fs;
+    offset = handles.offsets(i) / handles.fs;
     if isnan(onset) || isnan(offset)
         continue;
     end
