@@ -105,19 +105,20 @@ switch( lower( eventdata.Key ) )
         soundsList_Callback( handles.soundsList, [], handles );
         handles = guidata( hObject );
     case 'end'
-        handles = pushLabel( handles );
+        handles = pushLabel( handles, 1 );
         handles = popSoundStack( handles );
     case 'return'
         curLen = handles.sEnd - handles.sStart;
-        if curLen / handles.fs < 0.025
-            handles = pushLabel( handles );
+        if curLen / handles.fs < 0.2  ||  handles.l < 0
+            handles = pushLabel( handles, 1 );
         else
             handles.sStack = [handles.sStack;
-                handles.sStart, handles.sStart + floor( curLen/2 );
-                handles.sStart + floor( curLen/2 ) + 1, handles.sEnd];
+                handles.sStart, handles.sStart + floor( curLen/2 ), 1;
+                handles.sStart + floor( curLen/2 ) + 1, handles.sEnd, 1];
         end
         handles = popSoundStack( handles );
     case 'backspace'
+        handles = pushLabel( handles, -1 );
         handles = popSoundStack( handles );
 end
 guidata(hObject,handles);
@@ -174,7 +175,7 @@ smeans = mean(handles.s);
 handles.s = handles.s - repmat( smeans, length(handles.s), 1);
 smax = max( max( abs( handles.s ) ) );
 handles.s = handles.s ./ smax;
-handles.sStack = [1, length(handles.s)];
+handles.sStack = [1, length(handles.s), 1];
 handles.onsets = [];
 handles.offsets = [];
 handles = popSoundStack( handles );
