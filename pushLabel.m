@@ -80,9 +80,14 @@ if onoffsChanged
     i = 1;
     while i < size( onoffs, 1 )
         if sign( onoffs(i,2) ) == sign( onoffs(i+1,2) )
-            onoffs(i+1,2) = onoffs(i,2) + onoffs(i+1,2);
-            onoffs(i+1,3) = max( 1, onoffs(i+1,1) - onoffs(i,1) );
-            onoffs(i,:) = [];
+            if onoffs(i,3) == 1
+                onoffs(i+1,2) = onoffs(i,2) + onoffs(i+1,2);
+                onoffs(i+1,3) = max( 1, onoffs(i+1,1) - onoffs(i,1) );
+                onoffs(i,:) = [];
+            else
+                onoffs(i+1,3) = max( 1, onoffs(i+1,1) - onoffs(i,1) );
+                i = i + 1;
+            end
         else
             i = i + 1;
         end

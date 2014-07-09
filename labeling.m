@@ -97,6 +97,11 @@ handles = guidata(hObject);
 
 switch( lower( eventdata.Key ) )
     case 's'
+        saveOnoffs( handles );
+        if handles.player.isplaying
+            stopPlayer( handles.player );
+        end
+    case 'escape'
         if handles.player.isplaying
             stopPlayer( handles.player );
         end
@@ -193,6 +198,7 @@ handles.onsets{1} = [];
 handles.offsets{1} = [];
 handles.onsetsInterp = [];
 handles.offsetsInterp = [];
+handles = openAnnots( handles );
 guidata( hObject, handles );
 handles = popSoundStack( handles );
 guidata( hObject, handles );
