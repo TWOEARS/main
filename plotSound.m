@@ -10,13 +10,26 @@ else
 end
 hold( handles.soundAxes, 'on' );
 
-for i = 1:length(handles.onsets)
-    onset = handles.onsets(i) / handles.fs;
-    offset = handles.offsets(i) / handles.fs;
+for j = 1:length( handles.onsets )
+    for i = 1:length( handles.onsets{j} )
+        onset = handles.onsets{j}(i) / handles.fs;
+        offset = handles.offsets{j}(i) / handles.fs;
+        if isnan(onset) || isnan(offset)
+            continue;
+        end
+        harea = area( [onset offset], [0 0], -0.5, 'LineStyle', 'none');
+        set(harea, 'FaceColor', 'm')
+        alpha(0.2)
+    end
+end
+
+for i = 1:length( handles.onsetsInterp )
+    onset = handles.onsetsInterp(i) / handles.fs;
+    offset = handles.offsetsInterp(i) / handles.fs;
     if isnan(onset) || isnan(offset)
         continue;
     end
-    harea = area( [onset offset], [1 1], -1, 'LineStyle', 'none');
+    harea = area( [onset offset], [0.75 0.75], 0, 'LineStyle', 'none');
     set(harea, 'FaceColor', 'r')
     alpha(0.2)
 end

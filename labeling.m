@@ -101,6 +101,7 @@ switch( lower( eventdata.Key ) )
             stopPlayer( handles.player );
         end
     case 'space'
+        saveOnoffs( handles );
         set( handles.soundsList,'Value', get( handles.soundsList,'Value' ) + 1 );
         soundsList_Callback( handles.soundsList, [], handles );
         handles = guidata( hObject );
@@ -109,16 +110,24 @@ switch( lower( eventdata.Key ) )
         handles = popSoundStack( handles );
     case 'return'
         curLen = handles.sEnd - handles.sStart;
-        if curLen / handles.fs < 0.2  ||  handles.l < 0
+        if curLen / handles.fs < handles.minBlockLen  ||  handles.l < 0
             handles = pushLabel( handles, 1 );
         else
+            sep = floor( curLen*2/5 ) + randi( floor( curLen/5 ) );
             handles.sStack = [handles.sStack;
-                handles.sStart, handles.sStart + floor( curLen/2 ), 1;
-                handles.sStart + floor( curLen/2 ) + 1, handles.sEnd, 1];
+                handles.sStart, handles.sStart + sep, 1;
+                handles.sStart + sep + 1, handles.sEnd, 1];
         end
         handles = popSoundStack( handles );
-    case 'backspace'
+    case 'delete'
         handles = pushLabel( handles, -1 );
+        handles = popSoundStack( handles );
+    case 'home'
+        handles.minBlockLen = max( 0.2, handles.minBlockLen * 0.67 );
+        handles.shiftLen = handles.shiftLen * 0.67;
+        handles.sStack = [1, length(handles.s), 1];
+        handles.onsets{end+1} = [];
+        handles.offsets{end+1} = [];
         handles = popSoundStack( handles );
 end
 guidata(hObject,handles);
@@ -175,15 +184,23 @@ smeans = mean(handles.s);
 handles.s = handles.s - repmat( smeans, length(handles.s), 1);
 smax = max( max( abs( handles.s ) ) );
 handles.s = handles.s ./ smax;
+handles.minBlockLen = 0.45;
+handles.shiftLen = 0.1;
 handles.sStack = [1, length(handles.s), 1];
 handles.onsets = [];
 handles.offsets = [];
+handles.onsets{1} = [];
+handles.offsets{1} = [];
+handles.onsetsInterp = [];
+handles.offsetsInterp = [];
+guidata( hObject, handles );
 handles = popSoundStack( handles );
 guidata( hObject, handles );
 plotSound( hObject );
-set(findobj(hObject, 'Type', 'uicontrol'), 'Enable', 'off');
+set( handles.textfield, 'String', '' );
+set( findobj(hObject, 'Type', 'uicontrol'), 'Enable', 'off' );
 drawnow;
-set(findobj(hObject, 'Type', 'uicontrol'), 'Enable', 'on');
+set( findobj(hObject, 'Type', 'uicontrol'), 'Enable', 'on' );
 
 
 % --- Executes during object creation, after setting all properties.
