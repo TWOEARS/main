@@ -53,6 +53,9 @@ function labeling_OpeningFcn(hObject, eventdata, handles, varargin)
 % varargin   command line arguments to labeling (see VARARGIN)
 handles = guidata(hObject);
 
+handles.reactionTime = 0.2;
+
+handles.currentKey = 'nil';
 handles.saveAndStopKey = 's';
 handles.stopKey = 'escape';
 handles.saveAndProceedKey = 'space';
@@ -60,12 +63,15 @@ handles.onlyEventKey = 'end';
 handles.eventIncludedKey = 'return';
 handles.noEventKey = 'delete';
 handles.newLabelingRoundKey = 'home';
+handles.preLabelKey = 'l';
 helpTxt = sprintf( ['Press "%s" to stop playback, "%s" to stop and save; "%s" to save and proceed to the next sound.\n'...
     'Press "%s" if what you hear includes the event, "%s" if it is only the event, and "%s" if it doesn´t include the event.\n'...
-    '"%s" starts another round of labeling for this sound.'], ...
+    '"%s" starts another round of labeling for this sound.\n'...
+    'Press "%s" for live labeling.'], ...
     handles.stopKey, handles.saveAndStopKey, handles.saveAndProceedKey, ...
     handles.eventIncludedKey, handles.onlyEventKey, handles.noEventKey, ...
-    handles.newLabelingRoundKey );
+    handles.newLabelingRoundKey, ...
+    handles.preLabelKey );
 set( handles.helpText, 'String', helpTxt );
 
 handles.player.isplaying = false;
@@ -98,6 +104,31 @@ function varargout = labeling_OutputFcn(hObject, eventdata, handles)
 varargout{1} = handles.output;
 
 
+% --- Executes on key press with focus on labelingGuiFig and none of its controls.
+function labelingGuiFig_KeyPressFcn(hObject, eventdata, handles)
+% hObject    handle to labelingGuiFig (see GCBO)
+% eventdata  structure with the following fields (see FIGURE)
+%	Key: name of the key that was pressed, in lower case
+%	Character: character interpretation of the key(s) that was pressed
+%	Modifier: name(s) of the modifier key(s) (i.e., control, shift) pressed
+% handles    structure with handles and user data (see GUIDATA)
+handles = guidata(hObject);
+set(hObject,'Interruptible','off');
+
+if ~strcmpi( handles.currentKey, eventdata.Key )
+    handles.currentKey = eventdata.Key;
+    switch( eventdata.Key )
+        case handles.preLabelKey
+            if (handles.player.TotalSamples - handles.player.CurrentSample) / handles.fs < 0.1
+                handles.onsetsPre{handles.eventCounter} = [handles.onsetsPre{handles.eventCounter} 1];
+            else
+                handles.onsetsPre{handles.eventCounter} = [handles.onsetsPre{handles.eventCounter} max(1, handles.player.CurrentSample - handles.reactionTime * handles.fs)];
+            end
+    end
+    guidata(hObject,handles);
+end
+
+
 % --- Executes on key release with focus on labelingGuiFig and none of its controls.
 function labelingGuiFig_KeyReleaseFcn(hObject, eventdata, handles)
 % hObject    handle to labelingGuiFig (see GCBO)
@@ -108,6 +139,7 @@ function labelingGuiFig_KeyReleaseFcn(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 set(hObject,'Interruptible','off');
 handles = guidata(hObject);
+handles.currentKey = 'nil';
 
 switch( lower( eventdata.Key ) )
     case handles.saveAndStopKey
@@ -124,6 +156,28 @@ switch( lower( eventdata.Key ) )
         set( handles.soundsList,'Value', get( handles.soundsList,'Value' ) + 1 );
         soundsList_Callback( handles.soundsList, [], handles );
         handles = guidata( hObject );
+    case handles.preLabelKey
+        if handles.overrun
+            handles.offsetsPre{handles.overrunCounter} = [handles.offsetsPre{handles.overrunCounter} handles.player.TotalSamples];
+            handles.overrun = false;
+        else
+            if handles.player.CurrentSample == 1
+                handles.offsetsPre{handles.eventCounter} = [handles.offsetsPre{handles.eventCounter} handles.player.TotalSamples];
+            else
+                handles.offsetsPre{handles.eventCounter} = [handles.offsetsPre{handles.eventCounter} max(1, handles.player.CurrentSample - handles.reactionTime * handles.fs)];
+            end
+            handles.eventCounter = handles.eventCounter + 1;
+            if size( handles.onsetsPre,2 ) < handles.eventCounter
+                handles.onsetsPre{handles.eventCounter} = [];
+            end
+            if size( handles.offsetsPre,2 ) < handles.eventCounter
+                handles.offsetsPre{handles.eventCounter} = [];
+            end
+            tout = [sprintf( 'onsetsPre: %s\n', mat2str( double(int64(100*(cellfun(@median, handles.onsetsPre) ./ handles.fs)))/100 ) ),  sprintf( 'offsetsPre: %s\n', mat2str( double(int64(100*(cellfun(@median, handles.offsetsPre) ./ handles.fs)))/100 ) )];
+            set( handles.textfield, 'String', tout );
+        end
+        guidata( hObject,handles );
+        plotSound( hObject );
     case handles.onlyEventKey
         handles = pushLabel( handles, 1 );
         handles = popSoundStack( handles );
@@ -197,7 +251,6 @@ handles = guidata(hObject);
 contents = cellstr(get(hObject,'String'));
 selectedSound = regexprep( contents{get(hObject,'Value')}, '<html><b>', '' );
 selectedSound = regexprep( selectedSound, '</b></html>', '' );
-disp(selectedSound);
 [handles.s, handles.fs] = audioread( [handles.soundsDir '\' selectedSound] );
 smeans = mean(handles.s);
 handles.s = handles.s - repmat( smeans, length(handles.s), 1);
@@ -212,6 +265,13 @@ handles.onsets{1} = [];
 handles.offsets{1} = [];
 handles.onsetsInterp = [];
 handles.offsetsInterp = [];
+handles.onsetsPre = [];
+handles.offsetsPre = [];
+handles.onsetsPre{1} = [];
+handles.offsetsPre{1} = [];
+handles.eventCounter = 1;
+handles.overrun = false;
+handles.overrunCounter = 1;
 handles = openAnnots( handles );
 guidata( hObject, handles );
 handles = popSoundStack( handles );
