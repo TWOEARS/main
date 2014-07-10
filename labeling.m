@@ -53,7 +53,21 @@ function labeling_OpeningFcn(hObject, eventdata, handles, varargin)
 % varargin   command line arguments to labeling (see VARARGIN)
 handles = guidata(hObject);
 
-handles.currentKey = 'nil';
+handles.saveAndStopKey = 's';
+handles.stopKey = 'escape';
+handles.saveAndProceedKey = 'space';
+handles.onlyEventKey = 'end';
+handles.eventIncludedKey = 'return';
+handles.noEventKey = 'delete';
+handles.newLabelingRoundKey = 'home';
+helpTxt = sprintf( ['Press "%s" to stop playback, "%s" to stop and save; "%s" to save and proceed to the next sound.\n'...
+    'Press "%s" if what you hear includes the event, "%s" if it is only the event, and "%s" if it doesn´t include the event.\n'...
+    '"%s" starts another round of labeling for this sound.'], ...
+    handles.stopKey, handles.saveAndStopKey, handles.saveAndProceedKey, ...
+    handles.eventIncludedKey, handles.onlyEventKey, handles.noEventKey, ...
+    handles.newLabelingRoundKey );
+set( handles.helpText, 'String', helpTxt );
+
 handles.player.isplaying = false;
 if exist( 'labeling_settings.mat', 'file' )
     load( 'labeling_settings.mat', 'soundsDir' );
@@ -96,24 +110,24 @@ set(hObject,'Interruptible','off');
 handles = guidata(hObject);
 
 switch( lower( eventdata.Key ) )
-    case 's'
+    case handles.saveAndStopKey
         saveOnoffs( handles );
         if handles.player.isplaying
             stopPlayer( handles.player );
         end
-    case 'escape'
+    case handles.stopKey
         if handles.player.isplaying
             stopPlayer( handles.player );
         end
-    case 'space'
+    case handles.saveAndProceedKey
         saveOnoffs( handles );
         set( handles.soundsList,'Value', get( handles.soundsList,'Value' ) + 1 );
         soundsList_Callback( handles.soundsList, [], handles );
         handles = guidata( hObject );
-    case 'end'
+    case handles.onlyEventKey
         handles = pushLabel( handles, 1 );
         handles = popSoundStack( handles );
-    case 'return'
+    case handles.eventIncludedKey
         curLen = handles.sEnd - handles.sStart;
         if curLen / handles.fs < handles.minBlockLen  ||  handles.l < 0
             handles = pushLabel( handles, 1 );
@@ -124,11 +138,11 @@ switch( lower( eventdata.Key ) )
                 handles.sStart + sep + 1, handles.sEnd, 1];
         end
         handles = popSoundStack( handles );
-    case 'delete'
+    case handles.noEventKey
         handles = pushLabel( handles, -1 );
         handles = popSoundStack( handles );
-    case 'home'
-        handles.minBlockLen = max( 0.2, handles.minBlockLen * 0.67 );
+    case handles.newLabelingRoundKey
+        handles.minBlockLen = max( 0.1, handles.minBlockLen * 0.67 );
         handles.shiftLen = handles.shiftLen * 0.67;
         handles.sStack = [1, length(handles.s), 1];
         handles.onsets{end+1} = [];

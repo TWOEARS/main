@@ -7,20 +7,25 @@ if handles.l == 1  &&  l == 1
     handles.onsets{end} = [handles.onsets{end} handles.sStart];
     handles.offsets{end} = [handles.offsets{end} handles.sEnd];
     nTestLen = floor( handles.fs * handles.minBlockLen );
+    nShift = floor( handles.shiftLen * handles.fs );
     
     offsetsD = handles.sStart - handles.offsets{end};
     offsetsD(offsetsD <= 0) = [];
     maxOffsetD = max( offsetsD );
-    testOnset = max( [1, handles.sStart - maxOffsetD, handles.sStart - nTestLen] );
+    testOnset = max( [1, handles.sStart - maxOffsetD, handles.sStart - nTestLen + nShift] );
     d = handles.sStart - testOnset;
-    handles.sStack = [handles.sStart - d, min( length( handles.s ), handles.sStart - d + nTestLen ), -1; handles.sStack];
+    if d > handles.fs * 0.075
+        handles.sStack = [handles.sStart - d, min( length( handles.s ), handles.sStart + nShift ), -1; handles.sStack];
+    end
     
     onsetsD = handles.onsets{end} - handles.sEnd;
     onsetsD(onsetsD <= 0) = [];
     minOnsetD = min( onsetsD );
-    testOffset = min( [length( handles.s ), handles.sEnd + minOnsetD, handles.sEnd + nTestLen] );
+    testOffset = min( [length( handles.s ), handles.sEnd + minOnsetD, handles.sEnd + nTestLen - nShift] );
     d = testOffset - handles.sEnd;
-    handles.sStack = [max( 1, handles.sEnd + d - nTestLen ), handles.sEnd + d, -2; handles.sStack];
+    if d > handles.fs * 0.075
+        handles.sStack = [max( 1, handles.sEnd - nShift ), handles.sEnd + d, -2; handles.sStack];
+    end
 end
 if handles.l < 0  &&  l < 0
     onoffsChanged = true;
