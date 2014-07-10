@@ -54,6 +54,7 @@ function labeling_OpeningFcn(hObject, eventdata, handles, varargin)
 handles = guidata(hObject);
 
 handles.reactionTime = 0.2;
+handles.preLabel = true;
 
 handles.currentKey = 'nil';
 handles.saveAndStopKey = 's';
@@ -64,6 +65,7 @@ handles.eventIncludedKey = 'return';
 handles.noEventKey = 'delete';
 handles.newLabelingRoundKey = 'home';
 handles.preLabelKey = 'l';
+handles.stopPreLabelingKey = 'backspace';
 helpTxt = sprintf( ['Press "%s" to stop playback, "%s" to stop and save; "%s" to save and proceed to the next sound.\n'...
     'Press "%s" if what you hear includes the event, "%s" if it is only the event, and "%s" if it doesn´t include the event.\n'...
     '"%s" starts another round of labeling for this sound.\n'...
@@ -112,22 +114,23 @@ function labelingGuiFig_KeyPressFcn(hObject, eventdata, handles)
 %	Character: character interpretation of the key(s) that was pressed
 %	Modifier: name(s) of the modifier key(s) (i.e., control, shift) pressed
 % handles    structure with handles and user data (see GUIDATA)
-handles = guidata(hObject);
-set(hObject,'Interruptible','off');
-
-if ~strcmpi( handles.currentKey, eventdata.Key )
-    handles.currentKey = eventdata.Key;
-    switch( eventdata.Key )
-        case handles.preLabelKey
-            if (handles.player.TotalSamples - handles.player.CurrentSample) / handles.fs < 0.1
-                handles.onsetsPre{handles.eventCounter} = [handles.onsetsPre{handles.eventCounter} 1];
-            else
-                handles.onsetsPre{handles.eventCounter} = [handles.onsetsPre{handles.eventCounter} max(1, handles.player.CurrentSample - handles.reactionTime * handles.fs)];
-            end
+if handles.preLabel
+    handles = guidata(hObject);
+    set(hObject,'Interruptible','off');
+    
+    if ~strcmpi( handles.currentKey, eventdata.Key )
+        handles.currentKey = eventdata.Key;
+        switch( eventdata.Key )
+            case handles.preLabelKey
+                if (handles.player.TotalSamples - handles.player.CurrentSample) / handles.fs < 0.1
+                    handles.onsetsPre{handles.eventCounter} = [handles.onsetsPre{handles.eventCounter} 1];
+                else
+                    handles.onsetsPre{handles.eventCounter} = [handles.onsetsPre{handles.eventCounter} max(1, handles.player.CurrentSample - handles.reactionTime * handles.fs)];
+                end
+        end
+        guidata(hObject,handles);
     end
-    guidata(hObject,handles);
 end
-
 
 % --- Executes on key release with focus on labelingGuiFig and none of its controls.
 function labelingGuiFig_KeyReleaseFcn(hObject, eventdata, handles)
@@ -156,52 +159,77 @@ switch( lower( eventdata.Key ) )
         set( handles.soundsList,'Value', get( handles.soundsList,'Value' ) + 1 );
         soundsList_Callback( handles.soundsList, [], handles );
         handles = guidata( hObject );
-    case handles.preLabelKey
-        if handles.overrun
-            handles.offsetsPre{handles.overrunCounter} = [handles.offsetsPre{handles.overrunCounter} handles.player.TotalSamples];
-            handles.overrun = false;
-        else
-            if handles.player.CurrentSample == 1
-                handles.offsetsPre{handles.eventCounter} = [handles.offsetsPre{handles.eventCounter} handles.player.TotalSamples];
+end
+if handles.preLabel
+    switch( lower( eventdata.Key ) )
+        case handles.preLabelKey
+            if handles.overrun
+                handles.offsetsPre{handles.overrunCounter} = [handles.offsetsPre{handles.overrunCounter} handles.player.TotalSamples];
+                handles.overrun = false;
             else
-                handles.offsetsPre{handles.eventCounter} = [handles.offsetsPre{handles.eventCounter} max(1, handles.player.CurrentSample - handles.reactionTime * handles.fs)];
+                if handles.player.CurrentSample == 1
+                    handles.offsetsPre{handles.eventCounter} = [handles.offsetsPre{handles.eventCounter} handles.player.TotalSamples];
+                else
+                    handles.offsetsPre{handles.eventCounter} = [handles.offsetsPre{handles.eventCounter} max(1, handles.player.CurrentSample - handles.reactionTime * handles.fs)];
+                end
+                handles.eventCounter = handles.eventCounter + 1;
+                if size( handles.onsetsPre,2 ) < handles.eventCounter
+                    handles.onsetsPre{handles.eventCounter} = [];
+                end
+                if size( handles.offsetsPre,2 ) < handles.eventCounter
+                    handles.offsetsPre{handles.eventCounter} = [];
+                end
+                tout = [sprintf( 'onsetsPre: %s\n', mat2str( double(int64(100*(cellfun(@median, handles.onsetsPre) ./ handles.fs)))/100 ) ),  sprintf( 'offsetsPre: %s\n', mat2str( double(int64(100*(cellfun(@median, handles.offsetsPre) ./ handles.fs)))/100 ) )];
+                set( handles.textfield, 'String', tout );
             end
-            handles.eventCounter = handles.eventCounter + 1;
-            if size( handles.onsetsPre,2 ) < handles.eventCounter
-                handles.onsetsPre{handles.eventCounter} = [];
+            guidata( hObject,handles );
+            plotSound( hObject );
+        case handles.stopPreLabelingKey
+            imprecision = floor( handles.fs * (3.6E-01 + -7E-02 * log( length( handles.onsetsPre ) ) + 7.6E-02 * log( length( handles.s ) / handles.fs )) );
+            onsets = [0, cellfun( @median, handles.onsetsPre ), length(handles.s)];
+            offsets = [0, cellfun( @median, handles.offsetsPre ), length(handles.s)];
+            for i = 2:length(onsets)-1
+                if isnan( onsets(i) )  ||  isnan( offsets(i) ), continue, end
+                if offsets(i) - onsets(i) >= 2 * imprecision
+                    handles.sStart = onsets(i) + imprecision;
+                    handles.sEnd = offsets(i) - imprecision;
+                    handles.l = 1;
+                    handles = pushLabel( handles, 1 );
+                end
+                handles.sStack = [handles.sStack;
+                    max( 1, onsets(i) - imprecision ), min( length( handles.s ), onsets(i) + imprecision ), 1;
+                    max( 1, offsets(i) - imprecision ), min( length( handles.s ), offsets(i) + imprecision ), 1];
             end
-            if size( handles.offsetsPre,2 ) < handles.eventCounter
-                handles.offsetsPre{handles.eventCounter} = [];
-            end
-            tout = [sprintf( 'onsetsPre: %s\n', mat2str( double(int64(100*(cellfun(@median, handles.onsetsPre) ./ handles.fs)))/100 ) ),  sprintf( 'offsetsPre: %s\n', mat2str( double(int64(100*(cellfun(@median, handles.offsetsPre) ./ handles.fs)))/100 ) )];
-            set( handles.textfield, 'String', tout );
-        end
-        guidata( hObject,handles );
-        plotSound( hObject );
-    case handles.onlyEventKey
-        handles = pushLabel( handles, 1 );
-        handles = popSoundStack( handles );
-    case handles.eventIncludedKey
-        curLen = handles.sEnd - handles.sStart;
-        if curLen / handles.fs < handles.minBlockLen  ||  handles.l < 0
+            handles.preLabel = false;
+            handles = popSoundStack( handles );
+    end
+else
+    switch( lower( eventdata.Key ) )
+        case handles.onlyEventKey
             handles = pushLabel( handles, 1 );
-        else
-            sep = floor( curLen*2/5 ) + randi( floor( curLen/5 ) );
-            handles.sStack = [handles.sStack;
-                handles.sStart, handles.sStart + sep, 1;
-                handles.sStart + sep + 1, handles.sEnd, 1];
-        end
-        handles = popSoundStack( handles );
-    case handles.noEventKey
-        handles = pushLabel( handles, -1 );
-        handles = popSoundStack( handles );
-    case handles.newLabelingRoundKey
-        handles.minBlockLen = max( 0.1, handles.minBlockLen * 0.67 );
-        handles.shiftLen = handles.shiftLen * 0.67;
-        handles.sStack = [1, length(handles.s), 1];
-        handles.onsets{end+1} = [];
-        handles.offsets{end+1} = [];
-        handles = popSoundStack( handles );
+            handles = popSoundStack( handles );
+        case handles.eventIncludedKey
+            curLen = handles.sEnd - handles.sStart;
+            if curLen / handles.fs < handles.minBlockLen  ||  handles.l < 0
+                handles = pushLabel( handles, 1 );
+            else
+                sep = floor( curLen*2/5 ) + randi( floor( curLen/5 ) );
+                handles.sStack = [handles.sStack;
+                    handles.sStart, handles.sStart + sep, 1;
+                    handles.sStart + sep + 1, handles.sEnd, 1];
+            end
+            handles = popSoundStack( handles );
+        case handles.noEventKey
+            handles = pushLabel( handles, -1 );
+            handles = popSoundStack( handles );
+        case handles.newLabelingRoundKey
+            handles.minBlockLen = max( 0.1, handles.minBlockLen * 0.67 );
+            handles.shiftLen = handles.shiftLen * 0.67;
+            handles.sStack = [1, length(handles.s), 1];
+            handles.onsets{end+1} = [];
+            handles.offsets{end+1} = [];
+            handles = popSoundStack( handles );
+    end
 end
 guidata(hObject,handles);
 set(findobj(hObject, 'Type', 'uicontrol'), 'Enable', 'off');
@@ -265,6 +293,7 @@ handles.onsets{1} = [];
 handles.offsets{1} = [];
 handles.onsetsInterp = [];
 handles.offsetsInterp = [];
+handles.preLabel = (length( handles.s ) / handles.fs >= 1.0);
 handles.onsetsPre = [];
 handles.offsetsPre = [];
 handles.onsetsPre{1} = [];
