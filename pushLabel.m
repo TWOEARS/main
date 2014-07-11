@@ -1,5 +1,9 @@
 function handles = pushLabel( handles, l )
 
+tmpStatusTxt = get( handles.statusText, 'String' );
+set( handles.statusText, 'String', '...calculating...' );
+drawnow;
+
 onoffsChanged = false;
 
 if handles.l == 1  &&  l == 1
@@ -143,3 +147,4 @@ if onoffsChanged
     plotSound( handles.labelingGuiFig );
 end
 
+set( handles.statusText, 'String', tmpStatusTxt );

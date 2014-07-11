@@ -150,10 +150,12 @@ switch( lower( eventdata.Key ) )
         if handles.player.isplaying
             stopPlayer( handles.player );
         end
+        set( handles.statusText, 'String', 'Playback stopped' );
     case handles.stopKey
         if handles.player.isplaying
             stopPlayer( handles.player );
         end
+        set( handles.statusText, 'String', 'Playback stopped' );
     case handles.saveAndProceedKey
         saveOnoffs( handles );
         set( handles.soundsList,'Value', get( handles.soundsList,'Value' ) + 1 );
@@ -219,10 +221,11 @@ if handles.preLabel
                 end
             end
             handles.preLabel = false;
+            set( handles.statusText, 'String', 'Phase2: block Labeling' );
             handles = popSoundStack( handles );
     end
 else
-    if handles.l ~= 0
+    if handles.player.isplaying
         switch( lower( eventdata.Key ) )
             case handles.onlyEventKey
                 handles = pushLabel( handles, 1 );
@@ -317,6 +320,11 @@ handles.offsets{1} = [];
 handles.onsetsInterp = [];
 handles.offsetsInterp = [];
 handles.preLabel = (length( handles.s ) / handles.fs >= 1.0);
+if handles.preLabel
+    set( handles.statusText, 'String', 'Phase1: live Labeling' );
+else
+    set( handles.statusText, 'String', 'Phase2: block Labeling' );
+end
 handles.onsetsPre = [];
 handles.offsetsPre = [];
 handles.onsetsPre{1} = [];

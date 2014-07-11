@@ -4,10 +4,11 @@ handles = guidata( hfig );
 
 hold( handles.soundAxes, 'off' );
 if size(handles.s,2) == 2
-    plot( handles.soundAxes, (1:length(handles.s)) / handles.fs, handles.s(:,1), (1:length(handles.s)) / handles.fs, handles.s(:,2) );
+    h = plot( handles.soundAxes, (1:length(handles.s)) / handles.fs, handles.s(:,1), (1:length(handles.s)) / handles.fs, handles.s(:,2) );
 else
-    plot( handles.soundAxes, (1:length(handles.s)) / handles.fs, handles.s );
+    h = plot( handles.soundAxes, (1:length(handles.s)) / handles.fs, handles.s );
 end
+set(h, 'Zdata', -1 * ones(1,length(handles.s)));
 hold( handles.soundAxes, 'on' );
 
 for i = 1:length(handles.onsetsPre)
@@ -18,7 +19,8 @@ for i = 1:length(handles.onsetsPre)
     end
     harea = area( [onset offset], [0 0], -0.3, 'LineStyle', 'none');
     set(harea, 'FaceColor', 'y')
-    alpha(0.6)
+    set(get(harea,'children'), 'FaceAlpha', 0.6)
+    uistack( harea, 'top' );
 end
 
 for j = 1:length( handles.onsets )
@@ -30,7 +32,7 @@ for j = 1:length( handles.onsets )
         end
         harea = area( [onset offset], [-0.3 -0.3], -0.6, 'LineStyle', 'none');
         set(harea, 'FaceColor', 'm')
-        alpha(0.2)
+        set(get(harea,'children'), 'FaceAlpha', 0.2)
     end
 end
 
@@ -42,5 +44,6 @@ for i = 1:length( handles.onsetsInterp )
     end
     harea = area( [onset offset], [0.8 0.8], 0, 'LineStyle', 'none');
     set(harea, 'FaceColor', 'r')
-    alpha(0.2)
+    set(get(harea,'children'), 'FaceAlpha', 0.2)
+    uistack( harea, 'top' );
 end

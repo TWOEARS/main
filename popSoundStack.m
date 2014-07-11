@@ -16,4 +16,5 @@ else
     handles.sStart = [];
     handles.sEnd = [];
     handles.l = 0;
+    set( handles.statusText, 'String', 'Labeling round finished' );
 end
