@@ -12,4 +12,8 @@ if ~isempty( handles.sStack )
     handles.player = audioplayer( handles.s(handles.sStart:handles.sEnd), handles.fs );
     handles.player.StopFcn = {@playerStopped, handles.labelingGuiFig};
     handles.player.play( );
+else
+    handles.sStart = [];
+    handles.sEnd = [];
+    handles.l = 0;
 end
