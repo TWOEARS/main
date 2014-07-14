@@ -10,26 +10,6 @@ if handles.l == 1  &&  l == 1
     onoffsChanged = true;
     handles.onsets{end} = [handles.onsets{end} handles.sStart];
     handles.offsets{end} = [handles.offsets{end} handles.sEnd];
-    nTestLen = floor( handles.fs * handles.minBlockLen );
-    nShift = floor( handles.shiftLen * handles.fs );
-    
-    offsetsD = handles.sStart - handles.offsets{end};
-    offsetsD(offsetsD <= 0) = [];
-    maxOffsetD = max( offsetsD );
-    testOnset = max( [1, handles.sStart - maxOffsetD, handles.sStart - nTestLen + nShift] );
-    d = handles.sStart - testOnset;
-    if d > handles.fs * 0.075
-        handles.sStack = [handles.sStart - d, min( length( handles.s ), handles.sStart + nShift ), -1; handles.sStack];
-    end
-    
-    onsetsD = handles.onsets{end} - handles.sEnd;
-    onsetsD(onsetsD <= 0) = [];
-    minOnsetD = min( onsetsD );
-    testOffset = min( [length( handles.s ), handles.sEnd + minOnsetD, handles.sEnd + nTestLen - nShift] );
-    d = testOffset - handles.sEnd;
-    if d > handles.fs * 0.075
-        handles.sStack = [max( 1, handles.sEnd - nShift ), handles.sEnd + d, -2; handles.sStack];
-    end
 end
 if handles.l < 0  &&  l < 0
     onoffsChanged = true;
@@ -83,7 +63,8 @@ if onoffsChanged
                 if isnan(onset) || isnan(offset)
                     continue;
                 end
-                onoffs = [onoffs; onset, +1, 1; offset, -1, 1];
+                d = 0.1 * j + 1;
+                onoffs = [onoffs; onset, +d, 1; offset, -d, 1];
             end
         end
         onoffs = sortrows( onoffs, 1 );
@@ -131,7 +112,7 @@ if onoffsChanged
         winSize = 0.2 * 441;
         levelsInterp = filter( pdf( 'Normal', -floor(winSize/2):floor(winSize/2), 0, floor(winSize/8) ), 1, [levelsInterp zeros(1,ceil(winSize/2))] );
         levelsInterp = [levelsInterp(ceil(winSize/2):end) zeros(1,ceil(winSize))];
-        lmin = 1 / 3; %(1 / levelsMax) + (1 - (1 / levelsMax) ) / 3;
+        lmin = 2 / 5;
         levelsInterp(levelsInterp < lmin) = 0;
         levelsInterp(levelsInterp >= lmin) = 1;
         levelsInterpDelta = [levelsInterp, 0] - [0, levelsInterp];

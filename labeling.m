@@ -53,7 +53,7 @@ function labeling_OpeningFcn(hObject, eventdata, handles, varargin)
 % varargin   command line arguments to labeling (see VARARGIN)
 handles = guidata(hObject);
 
-handles.reactionTime = 0.2;
+handles.reactionTime = 0.25;
 handles.preLabel = true;
 
 handles.currentKey = 'nil';
@@ -162,7 +162,7 @@ switch( lower( eventdata.Key ) )
         soundsList_Callback( handles.soundsList, [], handles );
         handles = guidata( hObject );
 end
-if handles.preLabel
+if handles.phase == 1
     switch( lower( eventdata.Key ) )
         case handles.preLabelKey
             if handles.overrun
@@ -220,8 +220,8 @@ if handles.preLabel
                         max( 1, onsets(i) - onImp ), min( length( handles.s ), offsets(i) + offImp ), 1];
                 end
             end
-            handles.preLabel = false;
-            set( handles.statusText, 'String', 'Phase2: block Labeling' );
+            handles.phase = 2;
+            set( handles.statusText, 'String', 'Phase2: block Labeling / event finding' );
             handles = popSoundStack( handles );
     end
 else
@@ -248,6 +248,8 @@ else
     else
         switch( lower( eventdata.Key ) )
             case handles.newLabelingRoundKey
+                handles.phase = 2;
+                set( handles.statusText, 'String', 'Phase2: block Labeling / event finding' );
                 handles.minBlockLen = max( 0.1, handles.minBlockLen * 0.67 );
                 handles.shiftLen = handles.shiftLen * 0.67;
                 handles.sStack = [1, length(handles.s), 1];
@@ -319,11 +321,12 @@ handles.onsets{1} = [];
 handles.offsets{1} = [];
 handles.onsetsInterp = [];
 handles.offsetsInterp = [];
-handles.preLabel = (length( handles.s ) / handles.fs >= 1.0);
-if handles.preLabel
+if length( handles.s ) / handles.fs >= 1.0
+    handles.phase = 1;
     set( handles.statusText, 'String', 'Phase1: live Labeling' );
 else
-    set( handles.statusText, 'String', 'Phase2: block Labeling' );
+    handles.phase = 2;
+    set( handles.statusText, 'String', 'Phase2: block Labeling / event finding' );
 end
 handles.onsetsPre = [];
 handles.offsetsPre = [];
