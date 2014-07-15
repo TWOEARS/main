@@ -63,7 +63,7 @@ if onoffsChanged
                 if isnan(onset) || isnan(offset)
                     continue;
                 end
-                d = 0.1 * j + 1;
+                d = 0.5 * j;
                 onoffs = [onoffs; onset, +d, 1; offset, -d, 1];
             end
         end
@@ -112,7 +112,7 @@ if onoffsChanged
         winSize = 0.2 * 441;
         levelsInterp = filter( pdf( 'Normal', -floor(winSize/2):floor(winSize/2), 0, floor(winSize/8) ), 1, [levelsInterp zeros(1,ceil(winSize/2))] );
         levelsInterp = [levelsInterp(ceil(winSize/2):end) zeros(1,ceil(winSize))];
-        lmin = 2 / 5;
+        lmin = 1 / 2;
         levelsInterp(levelsInterp < lmin) = 0;
         levelsInterp(levelsInterp >= lmin) = 1;
         levelsInterpDelta = [levelsInterp, 0] - [0, levelsInterp];

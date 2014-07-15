@@ -187,44 +187,10 @@ if handles.phase == 1
             guidata( hObject,handles );
             plotSound( hObject );
         case handles.stopPreLabelingKey
-            onsets = [0, cellfun( @median, handles.onsetsPre ), length(handles.s)];
-            offsets = [0, cellfun( @median, handles.offsetsPre ), length(handles.s)];
-            onsetsStd = [0, cellfun( @(x)(std(x / handles.fs)), handles.onsetsPre ), 0];
-            offsetsStd = [0, cellfun( @(x)(std(x / handles.fs)), handles.offsetsPre ), 0];
-            for i = 2:length(onsets)-1
-                if isnan( onsets(i) )  ||  isnan( offsets(i) ), continue, end
-                roundsFactor = 1 / length( handles.onsetsPre{i-1} );
-                sLen = length( handles.s ) / handles.fs;
-                lenFactor = sLen^0.6 * 0.1 + 0.2;
-                onStdFactor = onsetsStd(i);
-                offStdFactor = offsetsStd(i);
-                if roundsFactor == 1  % std is not informative
-                    onImp = lenFactor;
-                    offImp = onImp;
-                else
-                    onImp = (roundsFactor * onStdFactor)^0.4;
-                    offImp = (roundsFactor * offStdFactor)^0.4;
-                end
-                onImp = floor( onImp * handles.fs );
-                offImp = floor( offImp * handles.fs );
-                if offsets(i) - onsets(i) >= onImp + offImp
-                    handles.sStart = onsets(i) + onImp;
-                    handles.sEnd = offsets(i) - offImp;
-                    handles.l = 1;
-                    handles = pushLabel( handles, 1 );
-                    handles.sStack = [handles.sStack;
-                        max( 1, onsets(i) - onImp ), min( length( handles.s ), onsets(i) + onImp ), 1;
-                        max( 1, offsets(i) - offImp ), min( length( handles.s ), offsets(i) + offImp ), 1];
-                else
-                    handles.sStack = [handles.sStack;
-                        max( 1, onsets(i) - onImp ), min( length( handles.s ), offsets(i) + offImp ), 1];
-                end
-            end
-            handles.phase = 2;
-            set( handles.statusText, 'String', 'Phase2: block Labeling / event finding' );
+            handles = changePhaseTo( 2, handles );
             handles = popSoundStack( handles );
     end
-else
+elseif handles.phase > 1
     if handles.player.isplaying
         switch( lower( eventdata.Key ) )
             case handles.onlyEventKey
@@ -248,13 +214,9 @@ else
     else
         switch( lower( eventdata.Key ) )
             case handles.newLabelingRoundKey
-                handles.phase = 2;
-                set( handles.statusText, 'String', 'Phase2: block Labeling / event finding' );
-                handles.minBlockLen = max( 0.1, handles.minBlockLen * 0.67 );
-                handles.shiftLen = handles.shiftLen * 0.67;
-                handles.sStack = [1, length(handles.s), 1];
-                handles.onsets{end+1} = [];
-                handles.offsets{end+1} = [];
+                handles.minBlockLen = max( 0.1, handles.minBlockLen * 0.5 );
+                handles.shiftLen = max( 0.02, handles.shiftLen * 0.5 );
+                handles = changePhaseTo( 1, handles );
                 handles = popSoundStack( handles );
         end
     end
@@ -312,29 +274,13 @@ smeans = mean(handles.s);
 handles.s = handles.s - repmat( smeans, length(handles.s), 1);
 smax = max( max( abs( handles.s ) ) );
 handles.s = handles.s ./ smax;
-handles.minBlockLen = 0.45;
+handles.minBlockLen = 0.5;
 handles.shiftLen = 0.1;
-handles.sStack = [1, length(handles.s), 1];
 handles.onsets = [];
 handles.offsets = [];
-handles.onsets{1} = [];
-handles.offsets{1} = [];
 handles.onsetsInterp = [];
 handles.offsetsInterp = [];
-if length( handles.s ) / handles.fs >= 1.0
-    handles.phase = 1;
-    set( handles.statusText, 'String', 'Phase1: live Labeling' );
-else
-    handles.phase = 2;
-    set( handles.statusText, 'String', 'Phase2: block Labeling / event finding' );
-end
-handles.onsetsPre = [];
-handles.offsetsPre = [];
-handles.onsetsPre{1} = [];
-handles.offsetsPre{1} = [];
-handles.eventCounter = 1;
-handles.overrun = false;
-handles.overrunCounter = 1;
+handles = changePhaseTo( 1, handles );
 handles = openAnnots( handles );
 guidata( hObject, handles );
 handles = popSoundStack( handles );

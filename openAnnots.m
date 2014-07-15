@@ -12,6 +12,10 @@ if annotFid ~= -1
         'Yes', 'No', 'Yes' );
     switch openOrNot
         case 'Yes'
+            if isempty( handles.onsets )
+                handles.onsets{1} = [];
+                handles.offsets{1} = [];
+            end
             while 1
                 annotLine = fgetl( annotFid );
                 if ~ischar( annotLine ), break, end
@@ -19,8 +23,6 @@ if annotFid ~= -1
                 handles.onsets{1} = [handles.onsets{1}; onsetOffset(1) * handles.fs];
                 handles.offsets{1} = [handles.offsets{1}; onsetOffset(2) * handles.fs];
             end
-            handles.onsets{2} = [];
-            handles.offsets{2} = [];
         case 'No'
             
     end
