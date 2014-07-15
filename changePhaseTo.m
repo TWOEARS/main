@@ -13,9 +13,7 @@ switch( phase )
         handles.offsetsPre = [];
         handles.onsetsPre{1} = [];
         handles.offsetsPre{1} = [];
-        handles.eventCounter = 1;
         handles.overrun = false;
-        handles.overrunCounter = 1;
         handles.sStack = [1, length(handles.s), 1];
     case 2
         handles.phase = 2;

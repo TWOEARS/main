@@ -123,9 +123,9 @@ if handles.preLabel
         switch( eventdata.Key )
             case handles.preLabelKey
                 if (handles.player.TotalSamples - handles.player.CurrentSample) / handles.fs < 0.1
-                    handles.onsetsPre{handles.eventCounter} = [handles.onsetsPre{handles.eventCounter} 1];
+                    handles.onsetsPre{end} = [handles.onsetsPre{end} 1];
                 else
-                    handles.onsetsPre{handles.eventCounter} = [handles.onsetsPre{handles.eventCounter} max(1, handles.player.CurrentSample - handles.reactionTime * handles.fs)];
+                    handles.onsetsPre{end} = [handles.onsetsPre{end} max(1, handles.player.CurrentSample - handles.reactionTime * handles.fs)];
                 end
         end
         guidata(hObject,handles);
@@ -166,24 +166,37 @@ if handles.phase == 1
     switch( lower( eventdata.Key ) )
         case handles.preLabelKey
             if handles.overrun
-                handles.offsetsPre{handles.overrunCounter} = [handles.offsetsPre{handles.overrunCounter} handles.player.TotalSamples];
+                handles.offsetsPre{end} = [handles.offsetsPre{end} handles.player.TotalSamples];
                 handles.overrun = false;
             else
                 if handles.player.CurrentSample == 1
-                    handles.offsetsPre{handles.eventCounter} = [handles.offsetsPre{handles.eventCounter} handles.player.TotalSamples];
+                    handles.offsetsPre{end} = [handles.offsetsPre{end} handles.player.TotalSamples];
                 else
-                    handles.offsetsPre{handles.eventCounter} = [handles.offsetsPre{handles.eventCounter} max(1, handles.player.CurrentSample - handles.reactionTime * handles.fs)];
+                    handles.offsetsPre{end} = [handles.offsetsPre{end} max(1, handles.player.CurrentSample - handles.reactionTime * handles.fs)];
                 end
-                handles.eventCounter = handles.eventCounter + 1;
-                if size( handles.onsetsPre,2 ) < handles.eventCounter
-                    handles.onsetsPre{handles.eventCounter} = [];
-                end
-                if size( handles.offsetsPre,2 ) < handles.eventCounter
-                    handles.offsetsPre{handles.eventCounter} = [];
-                end
-                tout = [sprintf( 'onsetsPre: %s\n', mat2str( double(int64(100*(cellfun(@median, handles.onsetsPre) ./ handles.fs)))/100 ) ),  sprintf( 'offsetsPre: %s\n', mat2str( double(int64(100*(cellfun(@median, handles.offsetsPre) ./ handles.fs)))/100 ) )];
-                set( handles.textfield, 'String', tout );
             end
+            onsetsPre = sort( [handles.onsetsPre{:}] );
+            offsetsPre = sort( [handles.offsetsPre{:}] );
+            onoffsPre = [[onsetsPre; ones(1,length(onsetsPre))] [offsetsPre; -1* ones(1,length(offsetsPre))]];
+            onoffsPre = sortrows( onoffsPre' );
+            handles.onsetsPre = [];
+            handles.onsetsPre{1} = onoffsPre(1,1);
+            handles.offsetsPre = [];
+            for i = 2:size( onoffsPre, 1 )
+                if onoffsPre(i,2) == 1
+                    if onoffsPre(i-1,2) == -1
+                        handles.onsetsPre{end+1} = [];
+                    end
+                    handles.onsetsPre{end} = [handles.onsetsPre{end} onoffsPre(i,1)];
+                else % onoffsPre(i,2) == -1
+                    if onoffsPre(i-1,2) == 1
+                        handles.offsetsPre{end+1} = [];
+                    end
+                    handles.offsetsPre{end} = [handles.offsetsPre{end} onoffsPre(i,1)];
+                end
+            end    
+            tout = [sprintf( 'onsetsPre: %s\n', mat2str( double(int64(100*(cellfun(@median, handles.onsetsPre) ./ handles.fs)))/100 ) ),  sprintf( 'offsetsPre: %s\n', mat2str( double(int64(100*(cellfun(@median, handles.offsetsPre) ./ handles.fs)))/100 ) )];
+            set( handles.textfield, 'String', tout );
             guidata( hObject,handles );
             plotSound( hObject );
         case handles.stopPreLabelingKey
