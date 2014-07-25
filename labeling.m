@@ -76,7 +76,6 @@ helpTxt = sprintf( ['Press "%s" to stop playback, "%s" to stop and save; "%s" to
     handles.newLabelingRoundKey );
 set( handles.helpText, 'String', helpTxt );
 
-handles.player.isplaying = false;
 if exist( 'labeling_settings.mat', 'file' )
     load( 'labeling_settings.mat', 'soundsDir' );
     set( handles.soundsDirEdit, 'String', soundsDir );
@@ -84,6 +83,7 @@ else
     set( handles.soundsDirEdit, 'String', pwd );
 end
 handles.soundsDir = get( handles.soundsDirEdit, 'String' );
+handles.phase = 0;
 updateSoundsList( handles );
 % Choose default command line output for labeling
 handles.output = hObject;
@@ -147,12 +147,12 @@ handles.currentKey = 'nil';
 switch( lower( eventdata.Key ) )
     case handles.saveAndStopKey
         saveOnoffs( handles );
-        if handles.player.isplaying
+        if isfield( handles, 'player' ) && isplaying( handles.player )
             stopPlayer( handles.player );
         end
         set( handles.statusText, 'String', 'Playback stopped' );
     case handles.stopKey
-        if handles.player.isplaying
+        if isfield( handles, 'player' ) && isplaying( handles.player )
             stopPlayer( handles.player );
         end
         set( handles.statusText, 'String', 'Playback stopped' );
@@ -204,7 +204,7 @@ if handles.phase == 1
             handles = popSoundStack( handles );
     end
 elseif handles.phase > 1
-    if handles.player.isplaying
+    if isfield( handles, 'player' ) && isplaying( handles.player )
         switch( lower( eventdata.Key ) )
             case handles.onlyEventKey
                 handles = pushLabel( handles, 1 );
