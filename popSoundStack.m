@@ -8,6 +8,7 @@ if ~isempty( handles.sStack )
     handles.sEnd = handles.sStack(1,2);
     handles.l = handles.sStack(1,3);
     handles.sStack(1,:) = [];
+    if isa( handles.player, 'audioplayer' ), delete( handles.player ), end
     handles.player = [];
     handles.player = audioplayer( handles.s(handles.sStart:handles.sEnd), handles.fs );
     handles.player.StopFcn = {@playerStopped, handles.labelingGuiFig};
