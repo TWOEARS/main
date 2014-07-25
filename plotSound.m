@@ -17,7 +17,7 @@ for i = 1:length(handles.onsetsPre)
     if isnan(onset) || isnan(offset)
         continue;
     end
-    harea = area( [onset offset], [0 0], -0.3, 'LineStyle', 'none');
+    harea = area( handles.soundAxes, [onset offset], [0 0], -0.3, 'LineStyle', 'none');
     set(harea, 'FaceColor', 'y')
     set(get(harea,'children'), 'FaceAlpha', 0.6)
     uistack( harea, 'top' );
@@ -30,7 +30,7 @@ for j = 1:length( handles.onsets )
         if isnan(onset) || isnan(offset)
             continue;
         end
-        harea = area( [onset offset], [-0.3 -0.3], -0.6, 'LineStyle', 'none');
+        harea = area( handles.soundAxes, [onset offset], [-0.3 -0.3], -0.6, 'LineStyle', 'none');
         set(harea, 'FaceColor', 'm')
         set(get(harea,'children'), 'FaceAlpha', 0.2)
     end
@@ -42,7 +42,7 @@ for i = 1:length( handles.onsetsInterp )
     if isnan(onset) || isnan(offset)
         continue;
     end
-    harea = area( [onset offset], [0.8 0.8], 0, 'LineStyle', 'none');
+    harea = area( handles.soundAxes, [onset offset], [0.8 0.8], 0, 'LineStyle', 'none');
     set(harea, 'FaceColor', 'r')
     set(get(harea,'children'), 'FaceAlpha', 0.2)
     uistack( harea, 'top' );
