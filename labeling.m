@@ -287,6 +287,8 @@ if isfield( handles, 'player' ) && isplaying( handles.player )
     handles = rmfield( handles, 'player' );
 end
 
+set( handles.statusText, 'String', 'LOADING' );
+drawnow;
 contents = cellstr(get(hObject,'String'));
 selectedSound = regexprep( contents{get(hObject,'Value')}, '<html><b>', '' );
 selectedSound = regexprep( selectedSound, '</b></html>', '' );
@@ -295,6 +297,7 @@ smeans = mean(handles.s);
 handles.s = handles.s - repmat( smeans, length(handles.s), 1);
 smax = max( max( abs( handles.s ) ) );
 handles.s = handles.s ./ smax;
+[handles.senv, handles.fsenv] = ampenv( handles.s, handles.fs );
 
 handles.minBlockLen = 0.5;
 handles.shiftLen = 0.1;

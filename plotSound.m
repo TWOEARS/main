@@ -3,13 +3,11 @@ function plotSound( hfig )
 handles = guidata( hfig );
 
 hold( handles.soundAxes, 'off' );
-if size(handles.s,2) == 2
-    h = plot( handles.soundAxes, (1:length(handles.s)) / handles.fs, handles.s(:,1), (1:length(handles.s)) / handles.fs, handles.s(:,2) );
-else
-    h = plot( handles.soundAxes, (1:length(handles.s)) / handles.fs, handles.s );
-end
-set(h, 'Zdata', -1 * ones(1,length(handles.s)));
+h = plot( handles.soundAxes, [1:length(handles.senv)]./handles.fsenv, handles.senv, 'b' );
+set(h, 'Zdata', -1 * ones(1,length(handles.senv)));
 hold( handles.soundAxes, 'on' );
+h = plot( handles.soundAxes, [1:length(handles.senv)]./handles.fsenv, -handles.senv, 'b' );
+set(h, 'Zdata', -1 * ones(1,length(handles.senv)));
 
 for i = 1:length(handles.onsetsPre)
     onset = median( handles.onsetsPre{i} ) / handles.fs;
