@@ -24,7 +24,9 @@ switch( phase )
             handles.sStack = [handles.sStack; 1, length( handles.s ), 1];
         else
             onsets = [0, cellfun( @median, handles.onsetsPre ), length(handles.s)];
+            onsets = floor( onsets );
             offsets = [0, cellfun( @median, handles.offsetsPre ), length(handles.s)];
+            offsets = floor( offsets );
             onsetsStd = [0, cellfun( @(x)(std(x / handles.fs)), handles.onsetsPre ), 0];
             offsetsStd = [0, cellfun( @(x)(std(x / handles.fs)), handles.offsetsPre ), 0];
             for i = 2:length(onsets)-1

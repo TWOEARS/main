@@ -1,7 +1,7 @@
 function handles = popSoundStack( handles )
 
 if isfield( handles, 'player' ) && isplaying( handles.player )
-    stopPlayer( handles.player );
+    stopPlayer( handles );
 end
 if ~isempty( handles.sStack )
     handles.sStart = handles.sStack(1,1);
@@ -12,6 +12,8 @@ if ~isempty( handles.sStack )
     handles.player = [];
     handles.player = audioplayer( handles.s(handles.sStart:handles.sEnd), handles.fs );
     handles.player.StopFcn = {@playerStopped, handles.labelingGuiFig};
+    handles.player.TimerPeriod = 0.2;
+    handles.player.TimerFcn = {@playerTimed, handles.labelingGuiFig};
     play( handles.player );
 elseif isempty( handles.sStack )  &&  handles.phase == 2
     handles = changePhaseTo( 3, handles );

@@ -1,5 +1,10 @@
-function stopPlayer( hPlayer )
+function stopPlayer( handles )
 
-hPlayer.StopFcn = [];
-stop( hPlayer );
+handles.player.TimerFcn = [];
+handles.player.StopFcn = [];
+stop( handles.player );
+set( handles.timeText, 'String', '[]' );
+set(findobj(handles.labelingGuiFig, 'Type', 'uicontrol'), 'Enable', 'off');
+drawnow;
+set(findobj(handles.labelingGuiFig, 'Type', 'uicontrol'), 'Enable', 'on');
 

@@ -148,12 +148,12 @@ switch( lower( eventdata.Key ) )
     case handles.saveAndStopKey
         saveOnoffs( handles );
         if isfield( handles, 'player' ) && isplaying( handles.player )
-            stopPlayer( handles.player );
+            stopPlayer( handles );
         end
         set( handles.statusText, 'String', 'Playback stopped' );
     case handles.stopKey
         if isfield( handles, 'player' ) && isplaying( handles.player )
-            stopPlayer( handles.player );
+            stopPlayer( handles );
         end
         set( handles.statusText, 'String', 'Playback stopped' );
     case handles.saveAndProceedKey
@@ -279,6 +279,14 @@ function soundsList_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 handles = guidata(hObject);
 
+set(hObject,'Interruptible','off');
+set( findobj(hObject, 'Type', 'uicontrol'), 'Enable', 'off' );
+if isfield( handles, 'player' ) && isplaying( handles.player )
+    stopPlayer( handles );
+    delete( handles.player );
+    handles = rmfield( handles, 'player' );
+end
+
 contents = cellstr(get(hObject,'String'));
 selectedSound = regexprep( contents{get(hObject,'Value')}, '<html><b>', '' );
 selectedSound = regexprep( selectedSound, '</b></html>', '' );
@@ -287,17 +295,24 @@ smeans = mean(handles.s);
 handles.s = handles.s - repmat( smeans, length(handles.s), 1);
 smax = max( max( abs( handles.s ) ) );
 handles.s = handles.s ./ smax;
+
 handles.minBlockLen = 0.5;
 handles.shiftLen = 0.1;
 handles.onsets = [];
 handles.offsets = [];
 handles.onsetsInterp = [];
 handles.offsetsInterp = [];
+
 handles = changePhaseTo( 1, handles );
 handles = openAnnots( handles );
+
 guidata( hObject, handles );
 handles = popSoundStack( handles );
 guidata( hObject, handles );
+
+set( findobj(hObject, 'Type', 'uicontrol'), 'Enable', 'on' );
+set(hObject,'Interruptible','on');
+
 plotSound( hObject );
 set( handles.textfield, 'String', '' );
 set( findobj(hObject, 'Type', 'uicontrol'), 'Enable', 'off' );
