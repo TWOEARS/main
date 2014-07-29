@@ -1,8 +1,6 @@
 function saveOnoffs( handles )
 
-contents = cellstr( get( handles.soundsList, 'String' ) );
-selectedSound = regexprep( contents{get( handles.soundsList, 'Value' ) }, '<html><b>', '' );
-selectedSound = regexprep( selectedSound, '</b></html>', '' );
+selectedSound = handles.soundfile;
 labelFileName = [handles.soundsDir '\' selectedSound '.txt'];
 
 annotFid = fopen( labelFileName, 'w' );
@@ -13,6 +11,8 @@ if annotFid ~= -1
         fprintf( annotFid, '%f\t%f\n', onset, offset );
     end
     fclose( annotFid );
+    handles.savedOnsets = handles.onsetsInterp;
+    handles.savedOffsets = handles.offsetsInterp;
 end
 
 updateSoundsList( handles );

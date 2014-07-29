@@ -305,6 +305,19 @@ function soundsList_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 handles = guidata(hObject);
 
+if isfield( handles, 'onsetsInterp' )
+    if ~isequal(handles.onsetsInterp, handles.savedOnsets) || ~isequal(handles.offsetsInterp, handles.savedOffsets)
+        saveOrNot = questdlg( 'Save labels before starting new playback?', ...
+            'Save?', ...
+            'Yes', 'No', 'Yes' );
+        switch saveOrNot
+            case 'Yes'
+                saveOnoffs( handles );
+            case 'No'
+        end
+    end
+end
+
 set(hObject,'Interruptible','off');
 set( findobj(hObject, 'Type', 'uicontrol'), 'Enable', 'off' );
 if isfield( handles, 'player' ) && isa( handles.player, 'audioplayer' ) && isplaying( handles.player )
@@ -318,6 +331,7 @@ drawnow;
 contents = cellstr(get(hObject,'String'));
 selectedSound = regexprep( contents{get(hObject,'Value')}, '<html><b>', '' );
 selectedSound = regexprep( selectedSound, '</b></html>', '' );
+handles.soundfile = selectedSound;
 [handles.s, handles.fs] = audioread( [handles.soundsDir '\' selectedSound] );
 smeans = mean(handles.s);
 handles.s = handles.s - repmat( smeans, length(handles.s), 1);
@@ -331,6 +345,8 @@ handles.onsets = [];
 handles.offsets = [];
 handles.onsetsInterp = [];
 handles.offsetsInterp = [];
+handles.savedOnsets = [];
+handles.savedOffsets = [];
 
 handles = changePhaseTo( 1, handles );
 handles = openAnnots( handles );
