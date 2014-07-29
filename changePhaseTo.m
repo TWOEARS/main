@@ -32,8 +32,8 @@ switch( phase )
             enEnv(enEnv >= enMin) = 1;
             enEnvDelta = [enEnv; 0] - [0; enEnv];
             envFsFactor = handles.fs / handles.fsenv;
-            onsets = find( enEnvDelta == +1 ) .* envFsFactor;
-            offsets = find( enEnvDelta == -1 ) .* envFsFactor;
+            onsets = floor( find( enEnvDelta == +1 ) .* envFsFactor );
+            offsets = ceil( find( enEnvDelta == -1 ) .* envFsFactor );
             for k = 1:length(onsets)
                 handles.sStack = [handles.sStack; onsets(k), offsets(k), 1];
             end
