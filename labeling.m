@@ -134,7 +134,7 @@ if handles.preLabel
         handles.currentKey = eventdata.Key;
         switch( eventdata.Key )
             case handles.preLabelKey
-                if isfield( handles, 'player' ) && isplaying( handles.player )
+                if isfield( handles, 'player' ) && isa( handles.player, 'audioplayer' ) && isplaying( handles.player )
                     if (handles.player.TotalSamples - handles.player.CurrentSample) / handles.fs < 0.1
                         handles.onsetsPre{end} = [handles.onsetsPre{end} 1];
                     else
@@ -161,25 +161,27 @@ handles.currentKey = 'nil';
 switch( lower( eventdata.Key ) )
     case handles.saveAndStopKey
         saveOnoffs( handles );
-        if isfield( handles, 'player' ) && isplaying( handles.player )
+        if isfield( handles, 'player' ) && isa( handles.player, 'audioplayer' ) && isplaying( handles.player )
             stopPlayer( handles );
         end
         set( handles.statusText, 'String', 'Playback stopped' );
     case handles.stopKey
-        if isfield( handles, 'player' ) && isplaying( handles.player )
+        if isfield( handles, 'player' ) && isa( handles.player, 'audioplayer' ) && isplaying( handles.player )
             stopPlayer( handles );
         end
         set( handles.statusText, 'String', 'Playback stopped' );
     case handles.saveAndProceedKey
         saveOnoffs( handles );
-        set( handles.soundsList,'Value', get( handles.soundsList,'Value' ) + 1 );
-        soundsList_Callback( handles.soundsList, [], handles );
+        if get( handles.soundsList,'Value' ) < length( get( handles.soundsList, 'String' ) )
+            set( handles.soundsList,'Value', get( handles.soundsList,'Value' ) + 1 );
+            soundsList_Callback( handles.soundsList, [], handles );
+        end
         handles = guidata( hObject );
 end
 if handles.phase == 1
     switch( lower( eventdata.Key ) )
         case handles.preLabelKey
-            if isfield( handles, 'player' ) && isplaying( handles.player ) && ~isempty( handles.onsetsPre{1} )
+            if isfield( handles, 'player' ) && isa( handles.player, 'audioplayer' ) && isplaying( handles.player ) && ~isempty( handles.onsetsPre{1} )
                 set( handles.helpText, 'String', sprintf([handles.genHelpTxt, '\n', handles.phase1aHelpTxt]) );
                 if handles.overrun
                     handles.offsetsPre{end} = [handles.offsetsPre{end} handles.player.TotalSamples];
@@ -228,7 +230,7 @@ if handles.phase == 1
             end
     end
 elseif handles.phase > 1
-    if isfield( handles, 'player' ) && isplaying( handles.player )
+    if isfield( handles, 'player' ) && isa( handles.player, 'audioplayer' ) && isplaying( handles.player )
         switch( lower( eventdata.Key ) )
             case handles.onlyEventKey
                 handles = pushLabel( handles, 1 );
@@ -305,7 +307,7 @@ handles = guidata(hObject);
 
 set(hObject,'Interruptible','off');
 set( findobj(hObject, 'Type', 'uicontrol'), 'Enable', 'off' );
-if isfield( handles, 'player' ) && isplaying( handles.player )
+if isfield( handles, 'player' ) && isa( handles.player, 'audioplayer' ) && isplaying( handles.player )
     stopPlayer( handles );
     delete( handles.player );
     handles = rmfield( handles, 'player' );

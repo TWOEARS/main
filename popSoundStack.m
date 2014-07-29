@@ -1,6 +1,6 @@
 function handles = popSoundStack( handles )
 
-if isfield( handles, 'player' ) && isplaying( handles.player )
+if isfield( handles, 'player' ) && isa( handles.player, 'audioplayer' ) && isplaying( handles.player )
     stopPlayer( handles );
 end
 if ~isempty( handles.sStack )
