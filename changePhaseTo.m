@@ -77,21 +77,22 @@ switch( phase )
     case 3
         handles.phase = 3;
         set( handles.statusText, 'String', 'Phase2: block Labeling / event shrinking' );
-        nTestLen = floor( handles.fs * handles.minBlockLen );
+        shrinkLen = floor( handles.fs * handles.minBlockLen );
         nShift = floor( handles.shiftLen * handles.fs );
         for i = 1:length( handles.onsets{end} )
-            offsetsD = handles.onsets{end}(i) - handles.offsets{end};
-            offsetsD(offsetsD <= 0) = [];
-            maxOffsetD = max( offsetsD );
-            testOnset = max( [1, handles.onsets{end}(i) - maxOffsetD, handles.onsets{end}(i) - nTestLen + nShift] );
-            d = handles.onsets{end}(i) - testOnset;
-            handles.sStack = [handles.onsets{end}(i) - d, min( length( handles.s ), handles.onsets{end}(i) + nShift ), -1; handles.sStack];
-            onsetsD = handles.onsets{end} - handles.offsets{end}(i);
-            onsetsD(onsetsD <= 0) = [];
-            minOnsetD = min( onsetsD );
-            testOffset = min( [length( handles.s ), handles.offsets{end}(i) + minOnsetD, handles.offsets{end}(i) + nTestLen - nShift] );
-            d = testOffset - handles.offsets{end}(i);
-            handles.sStack = [max( 1, handles.offsets{end}(i) - nShift ), handles.offsets{end}(i) + d, -2; handles.sStack];
+            onset = handles.onsets{end}(i);
+            offsetsDistance = onset - handles.offsets{end};
+            offsetsDistance(offsetsDistance <= 0) = [];
+            shortestOffsetDistance = min( offsetsDistance );
+            shrinkOnset = max( [1, onset - shortestOffsetDistance, onset - shrinkLen + nShift] );
+            handles.sStack = [shrinkOnset, min( length( handles.s ), onset + nShift ), -1; handles.sStack];
+
+            offset = handles.offsets{end}(i);
+            onsetsDistance = handles.onsets{end} - offset;
+            onsetsDistance(onsetsDistance <= 0) = [];
+            shortestOnsetDistance = min( onsetsDistance );
+            shrinkOffset = min( [length( handles.s ), offset + shortestOnsetDistance, offset + shrinkLen - nShift] );
+            handles.sStack = [max( 1, offset - nShift ), shrinkOffset, -2; handles.sStack];
         end
 end
 

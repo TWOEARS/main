@@ -30,13 +30,13 @@ if handles.l < 0  &&  l < 0
         end
         i = i + 1;
     end
-    d = handles.sEnd - handles.sStart;
+    shrinkLen = handles.sEnd - handles.sStart;
     nShift = floor( handles.shiftLen * handles.fs );
     if handles.l == -1
-        handles.sStack = [handles.sStart, handles.sStart + d + nShift, -1; handles.sStack];
+        handles.sStack = [handles.sStart, handles.sStart + shrinkLen + nShift, -1; handles.sStack];
     end
     if handles.l == -2
-        handles.sStack = [handles.sEnd - d - nShift, handles.sEnd, -2; handles.sStack];
+        handles.sStack = [handles.sEnd - shrinkLen - nShift, handles.sEnd, -2; handles.sStack];
     end
 end
 
