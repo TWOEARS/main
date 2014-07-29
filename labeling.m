@@ -66,15 +66,27 @@ handles.noEventKey = 'delete';
 handles.newLabelingRoundKey = 'home';
 handles.preLabelKey = 'l';
 handles.stopPreLabelingKey = 'backspace';
-helpTxt = sprintf( ['Press "%s" to stop playback, "%s" to stop and save; "%s" to save and proceed to the next sound.\n'...
-    'Phase 1: Press "%s" while hearing the event.\n'...
-    'Phase 2&3: Press "%s" if what you hear includes the event, "%s" if it is only the event, and "%s" if it doesn´t include the event.\n'...
+handles.energyProceedKey = 'pageup';
+handles.gen0HelpTxt = 'Click on a sound in the list to start playback and labeling.';
+handles.genHelpTxt = sprintf( [ ...
+    'Press "%s" to stop playback, "%s" to stop and save; ' ...
+    '"%s" to save and proceed to the next sound.'], ...
+    handles.stopKey, handles.saveAndStopKey, handles.saveAndProceedKey );
+handles.phase1aHelpTxt = sprintf( [
+    'Phase 1: Press "%s" while hearing the event. Press "%s" to proceed to phase 2.\n'], ...
+    handles.preLabelKey, handles.stopPreLabelingKey );
+handles.phase1bHelpTxt = sprintf( [
+    'Phase 1: Press "%s" while hearing the event. ' ...
+    'Press "%s" to proceed to phase 2 ("%s": based on energy).\n'], ...
+    handles.preLabelKey, handles.stopPreLabelingKey, handles.energyProceedKey );
+handles.phase2HelpTxt = sprintf( [
+    'Phase 2: Press "%s" if what you hear includes the event, "%s" if it is only the event, ' ...
+    'and "%s" if it doesn´t include the event.\n'], ...
+    handles.eventIncludedKey, handles.onlyEventKey, handles.noEventKey );
+handles.gen2HelpTxt = sprintf( [
     '"%s" starts an additional round of labeling for this sound.\n'], ...
-    handles.stopKey, handles.saveAndStopKey, handles.saveAndProceedKey, ...
-    handles.preLabelKey, ...
-    handles.eventIncludedKey, handles.onlyEventKey, handles.noEventKey, ...
     handles.newLabelingRoundKey );
-set( handles.helpText, 'String', helpTxt );
+set( handles.helpText, 'String', handles.gen0HelpTxt );
 
 if exist( 'labeling_settings.mat', 'file' )
     load( 'labeling_settings.mat', 'soundsDir' );
@@ -125,7 +137,7 @@ if handles.preLabel
                 if (handles.player.TotalSamples - handles.player.CurrentSample) / handles.fs < 0.1
                     handles.onsetsPre{end} = [handles.onsetsPre{end} 1];
                 else
-                    handles.onsetsPre{end} = [handles.onsetsPre{end} max(1, handles.player.CurrentSample - handles.reactionTime * handles.fs)];
+                    handles.onsetsPre{end} = [handles.onsetsPre{end} max(1, handles.player.CurrentSample - 3 * handles.reactionTime * handles.fs)];
                 end
         end
         guidata(hObject,handles);
@@ -165,6 +177,7 @@ end
 if handles.phase == 1
     switch( lower( eventdata.Key ) )
         case handles.preLabelKey
+            set( handles.helpText, 'String', sprintf([handles.genHelpTxt, '\n', handles.phase1aHelpTxt]) );
             if handles.overrun
                 handles.offsetsPre{end} = [handles.offsetsPre{end} handles.player.TotalSamples];
                 handles.overrun = false;
@@ -200,8 +213,15 @@ if handles.phase == 1
             guidata( hObject,handles );
             plotSound( hObject );
         case handles.stopPreLabelingKey
+            handles.energyProceed = false;
             handles = changePhaseTo( 2, handles );
             handles = popSoundStack( handles );
+        case handles.energyProceedKey
+            if isempty( handles.onsetsPre{1} )
+                handles.energyProceed = true;
+                handles = changePhaseTo( 2, handles );
+                handles = popSoundStack( handles );
+            end
     end
 elseif handles.phase > 1
     if isfield( handles, 'player' ) && isplaying( handles.player )

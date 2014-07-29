@@ -6,9 +6,11 @@ switch( phase )
         handles.sEnd = [];
         handles.l = 0;
         set( handles.statusText, 'String', 'Labeling round finished' );
+        set( handles.helpText, 'String', sprintf([handles.genHelpTxt, '\n', handles.gen2HelpTxt]) );
     case 1
         handles.phase = 1;
         set( handles.statusText, 'String', 'Phase1: live Labeling' );
+        set( handles.helpText, 'String', sprintf([handles.genHelpTxt, '\n', handles.phase1bHelpTxt]) );
         handles.onsetsPre = [];
         handles.offsetsPre = [];
         handles.onsetsPre{1} = [];
@@ -18,10 +20,23 @@ switch( phase )
     case 2
         handles.phase = 2;
         set( handles.statusText, 'String', 'Phase2: block Labeling / event finding' );
+        set( handles.helpText, 'String', sprintf([handles.genHelpTxt, '\n', handles.phase2HelpTxt]) );
         handles.onsets{end+1} = [];
         handles.offsets{end+1} = [];
-        if isempty( handles.onsetsPre{end} )
+        if isempty( handles.onsetsPre{end} ) && ~handles.energyProceed
             handles.sStack = [handles.sStack; 1, length( handles.s ), 1];
+        elseif isempty( handles.onsetsPre{end} ) && handles.energyProceed
+            enEnv = handles.senv;
+            enMin = 0.01;
+            enEnv(enEnv < enMin) = 0;
+            enEnv(enEnv >= enMin) = 1;
+            enEnvDelta = [enEnv; 0] - [0; enEnv];
+            envFsFactor = handles.fs / handles.fsenv;
+            onsets = find( enEnvDelta == +1 ) .* envFsFactor;
+            offsets = find( enEnvDelta == -1 ) .* envFsFactor;
+            for k = 1:length(onsets)
+                handles.sStack = [handles.sStack; onsets(k), offsets(k), 1];
+            end
         else
             onsets = [0, cellfun( @median, handles.onsetsPre ), length(handles.s)];
             onsets = floor( onsets );
@@ -70,17 +85,13 @@ switch( phase )
             maxOffsetD = max( offsetsD );
             testOnset = max( [1, handles.onsets{end}(i) - maxOffsetD, handles.onsets{end}(i) - nTestLen + nShift] );
             d = handles.onsets{end}(i) - testOnset;
-            if d > handles.fs * 0.075
-                handles.sStack = [handles.onsets{end}(i) - d, min( length( handles.s ), handles.onsets{end}(i) + nShift ), -1; handles.sStack];
-            end
+            handles.sStack = [handles.onsets{end}(i) - d, min( length( handles.s ), handles.onsets{end}(i) + nShift ), -1; handles.sStack];
             onsetsD = handles.onsets{end} - handles.offsets{end}(i);
             onsetsD(onsetsD <= 0) = [];
             minOnsetD = min( onsetsD );
             testOffset = min( [length( handles.s ), handles.offsets{end}(i) + minOnsetD, handles.offsets{end}(i) + nTestLen - nShift] );
             d = testOffset - handles.offsets{end}(i);
-            if d > handles.fs * 0.075
-                handles.sStack = [max( 1, handles.offsets{end}(i) - nShift ), handles.offsets{end}(i) + d, -2; handles.sStack];
-            end
+            handles.sStack = [max( 1, handles.offsets{end}(i) - nShift ), handles.offsets{end}(i) + d, -2; handles.sStack];
         end
 end
 

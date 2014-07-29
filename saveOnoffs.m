@@ -15,3 +15,4 @@ if annotFid ~= -1
     fclose( annotFid );
 end
 
+updateSoundsList( handles );
