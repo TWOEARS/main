@@ -258,7 +258,6 @@ elseif handles.phase > 1
                 handles = popSoundStack( handles );
         end
         end
-    end
 end
 guidata(hObject,handles);
 set(findobj(hObject, 'Type', 'uicontrol'), 'Enable', 'off');
