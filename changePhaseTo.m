@@ -73,6 +73,17 @@ switch( phase )
                         max( 1, onsets(i) - onImp ), min( length( handles.s ), offsets(i) + offImp ), 1];
                 end
             end
+            sortedStack = sortrows( handles.sStack, [1 2] );
+            handles.sStack = sortedStack(1,:);
+            for k = 2:size(sortedStack,1)
+                if sortedStack(k,2) <= handles.sStack(end,2)
+                    continue;
+                elseif sortedStack(k,1) <= handles.sStack(end,2)
+                    handles.sStack(end,2) = sortedStack(k,2);
+                else
+                    handles.sStack = [handles.sStack; sortedStack(k,:)];
+                end
+            end
         end
     case 3
         handles.phase = 3;
