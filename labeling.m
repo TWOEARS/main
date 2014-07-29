@@ -177,6 +177,13 @@ switch( lower( eventdata.Key ) )
             soundsList_Callback( handles.soundsList, [], handles );
         end
         handles = guidata( hObject );
+    case handles.newLabelingRoundKey
+        if ~isfield( handles, 'player' ) || ~isa( handles.player, 'audioplayer' ) || ~isplaying( handles.player )
+            handles.minBlockLen = max( 0.1, handles.minBlockLen * 0.5 );
+            handles.shiftLen = max( 0.02, handles.shiftLen * 0.5 );
+            handles = changePhaseTo( 1, handles );
+            handles = popSoundStack( handles );
+        end
 end
 if handles.phase == 1
     switch( lower( eventdata.Key ) )
@@ -250,13 +257,6 @@ elseif handles.phase > 1
                 handles = pushLabel( handles, -1 );
                 handles = popSoundStack( handles );
         end
-    else
-        switch( lower( eventdata.Key ) )
-            case handles.newLabelingRoundKey
-                handles.minBlockLen = max( 0.1, handles.minBlockLen * 0.5 );
-                handles.shiftLen = max( 0.02, handles.shiftLen * 0.5 );
-                handles = changePhaseTo( 1, handles );
-                handles = popSoundStack( handles );
         end
     end
 end
