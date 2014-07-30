@@ -162,12 +162,12 @@ switch( lower( eventdata.Key ) )
     case handles.saveAndStopKey
         saveOnoffs( handles );
         if isfield( handles, 'player' ) && isa( handles.player, 'audioplayer' ) && isplaying( handles.player )
-            stopPlayer( handles );
+            handles = stopPlayer( handles );
         end
         set( handles.statusText, 'String', 'Playback stopped' );
     case handles.stopKey
         if isfield( handles, 'player' ) && isa( handles.player, 'audioplayer' ) && isplaying( handles.player )
-            stopPlayer( handles );
+            handles = stopPlayer( handles );
         end
         set( handles.statusText, 'String', 'Playback stopped' );
     case handles.saveAndProceedKey
@@ -320,7 +320,7 @@ end
 set(hObject,'Interruptible','off');
 set( findobj(hObject, 'Type', 'uicontrol'), 'Enable', 'off' );
 if isfield( handles, 'player' ) && isa( handles.player, 'audioplayer' ) && isplaying( handles.player )
-    stopPlayer( handles );
+    handles = stopPlayer( handles );
     delete( handles.player );
     handles = rmfield( handles, 'player' );
 end
@@ -404,6 +404,9 @@ function soundAxes_ButtonDownFcn(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
+if handles.phase ~= 4
+    return;
+end
 t = get(hObject,'CurrentPoint');
 handles.mouseMoveStartT = t(1,1);
 handles.mouseMoveAreaH = [];
@@ -423,7 +426,7 @@ t = t(1,1);
 plotSound( handles.labelingGuiFig );
 onset = floor( handles.mouseMoveStartT * handles.fs );
 offset = min( length( handles.s ), ceil( t * handles.fs ) );
-handles.sStack = [onset, offset, 1];
+handles.sStack = [min(onset, offset), max(onset, offset), 1];
 guidata( hObject, handles );
 handles = popSoundStack( handles );
 guidata( hObject, handles );

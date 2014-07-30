@@ -1,7 +1,7 @@
 function handles = popSoundStack( handles )
 
 if isfield( handles, 'player' ) && isa( handles.player, 'audioplayer' ) && isplaying( handles.player )
-    stopPlayer( handles );
+    handles = stopPlayer( handles );
 end
 if ~isempty( handles.sStack )
     handles.sStart = handles.sStack(1,1);
@@ -23,5 +23,5 @@ elseif isempty( handles.sStack )  &&  handles.phase == 2
     handles = changePhaseTo( 3, handles );
     handles = popSoundStack( handles );
 elseif isempty( handles.sStack ) && handles.phase == 3
-    handles = changePhaseTo( 0, handles );
+    handles = changePhaseTo( 4, handles );
 end

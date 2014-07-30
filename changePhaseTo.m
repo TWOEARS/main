@@ -1,12 +1,6 @@
 function handles = changePhaseTo( phase, handles )
 
 switch( phase )
-    case 0
-        handles.sStart = [];
-        handles.sEnd = [];
-        handles.l = 0;
-        set( handles.statusText, 'String', 'Labeling round finished' );
-        set( handles.helpText, 'String', sprintf([handles.genHelpTxt, '\n', handles.gen2HelpTxt]) );
     case 1
         handles.phase = 1;
         set( handles.statusText, 'String', 'Phase1: live Labeling' );
@@ -105,6 +99,13 @@ switch( phase )
             shrinkOffset = min( [length( handles.s ), offset + shortestOnsetDistance, offset + shrinkLen - nShift] );
             handles.sStack = [max( 1, offset - nShift ), shrinkOffset, -2; handles.sStack];
         end
+    case 4
+        handles.phase = 4;
+        handles.sStart = [];
+        handles.sEnd = [];
+        handles.l = 0;
+        set( handles.statusText, 'String', '' );
+        set( handles.helpText, 'String', sprintf([handles.genHelpTxt, '\n', handles.gen2HelpTxt]) );
 end
 
 set(findobj(handles.labelingGuiFig, 'Type', 'uicontrol'), 'Enable', 'off');
