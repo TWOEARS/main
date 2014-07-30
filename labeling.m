@@ -161,18 +161,21 @@ handles.currentKey = 'nil';
 
 switch( lower( eventdata.Key ) )
     case handles.saveAndStopKey
-        saveOnoffs( handles );
+        handles = saveOnoffs( handles );
         if isfield( handles, 'player' ) && isa( handles.player, 'audioplayer' ) && isplaying( handles.player )
             handles = stopPlayer( handles );
         end
         handles = changePhaseTo( 4, handles );
+        guidata( hObject, handles );
     case handles.stopKey
         if isfield( handles, 'player' ) && isa( handles.player, 'audioplayer' ) && isplaying( handles.player )
             handles = stopPlayer( handles );
         end
         handles = changePhaseTo( 4, handles );
+        guidata( hObject, handles );
     case handles.saveAndProceedKey
-        saveOnoffs( handles );
+        handles = saveOnoffs( handles );
+        guidata( hObject, handles );
         if get( handles.soundsList,'Value' ) < length( get( handles.soundsList, 'String' ) )
             set( handles.soundsList,'Value', get( handles.soundsList,'Value' ) + 1 );
             soundsList_Callback( handles.soundsList, [], handles );
@@ -185,6 +188,7 @@ switch( lower( eventdata.Key ) )
             handles = changePhaseTo( 1, handles );
             handles = popSoundStack( handles );
         end
+        guidata( hObject, handles );
 end
 if handles.phase == 1
     switch( lower( eventdata.Key ) )
@@ -334,7 +338,7 @@ if isfield( handles, 'onsetsInterp' )
             'Yes', 'No', 'Yes' );
         switch saveOrNot
             case 'Yes'
-                saveOnoffs( handles );
+                handles = saveOnoffs( handles );
             case 'No'
         end
     end

@@ -1,4 +1,4 @@
-function saveOnoffs( handles )
+function handles = saveOnoffs( handles )
 
 selectedSound = handles.soundfile;
 labelFileName = [handles.soundsDir '\' selectedSound '.txt'];
