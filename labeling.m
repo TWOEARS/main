@@ -22,16 +22,16 @@ function varargout = labeling(varargin)
 
 % Edit the above text to modify the response to help labeling
 
-% Last Modified by GUIDE v2.5 07-Jul-2014 12:46:38
+% Last Modified by GUIDE v2.5 29-Jul-2014 18:00:14
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
 gui_State = struct('gui_Name',       mfilename, ...
-                   'gui_Singleton',  gui_Singleton, ...
-                   'gui_OpeningFcn', @labeling_OpeningFcn, ...
-                   'gui_OutputFcn',  @labeling_OutputFcn, ...
-                   'gui_LayoutFcn',  [] , ...
-                   'gui_Callback',   []);
+    'gui_Singleton',  gui_Singleton, ...
+    'gui_OpeningFcn', @labeling_OpeningFcn, ...
+    'gui_OutputFcn',  @labeling_OutputFcn, ...
+    'gui_LayoutFcn',  [] , ...
+    'gui_Callback',   []);
 if nargin && ischar(varargin{1})
     gui_State.gui_Callback = str2func(varargin{1});
 end
@@ -108,7 +108,7 @@ guidata(hObject, handles);
 
 
 % --- Outputs from this function are returned to the command line.
-function varargout = labeling_OutputFcn(hObject, eventdata, handles) 
+function varargout = labeling_OutputFcn(hObject, eventdata, handles)
 % varargout  cell array for returning output args (see VARARGOUT);
 % hObject    handle to figure
 % eventdata  reserved - to be defined in a future version of MATLAB
@@ -257,7 +257,7 @@ elseif handles.phase > 1
                 handles = pushLabel( handles, -1 );
                 handles = popSoundStack( handles );
         end
-        end
+    end
 end
 guidata(hObject,handles);
 set(findobj(hObject, 'Type', 'uicontrol'), 'Enable', 'off');
@@ -396,3 +396,54 @@ handles = guidata(hObject);
 handles.soundsDir = get( hObject, 'String' );
 guidata(hObject,handles);
 updateSoundsList( handles );
+
+
+% --- Executes on mouse press over axes background.
+function soundAxes_ButtonDownFcn(hObject, eventdata, handles)
+% hObject    handle to soundAxes (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+t = get(hObject,'CurrentPoint');
+handles.mouseMoveStartT = t(1,1);
+handles.mouseMoveAreaH = [];
+guidata(hObject,handles);
+set(handles.labelingGuiFig,'WindowButtonUpFcn', ...
+    @(hObject,eventdata)labeling('soundAxes_ButtonUpFcn',hObject,eventdata,guidata(hObject)));
+set(handles.labelingGuiFig,'WindowButtonMotionFcn', ...
+    @(hObject,eventdata)labeling('soundAxes_ButtonMotionFcn',hObject,eventdata,guidata(hObject)));
+
+   
+function soundAxes_ButtonUpFcn(hObject, eventdata, handles)
+
+set(handles.labelingGuiFig,'WindowButtonMotionFcn', []);
+set(handles.labelingGuiFig,'WindowButtonUpFcn', []);
+t = get(handles.soundAxes,'CurrentPoint');
+t = t(1,1);
+plotSound( handles.labelingGuiFig );
+onset = floor( handles.mouseMoveStartT * handles.fs );
+offset = min( length( handles.s ), ceil( t * handles.fs ) );
+handles.sStack = [onset, offset, 1];
+guidata( hObject, handles );
+handles = popSoundStack( handles );
+guidata( hObject, handles );
+
+   
+function soundAxes_ButtonMotionFcn(hObject, eventdata, handles)
+
+t = get(handles.soundAxes,'CurrentPoint');
+t = t(1,1);
+buttonDown = get(handles.soundAxes, 'ButtonDownFcn');
+if isempty( handles.mouseMoveAreaH )
+    handles.mouseMoveAreaH = area( handles.soundAxes, [handles.mouseMoveStartT t], [1 1], -1, 'LineStyle', 'none');
+    guidata(hObject,handles);
+    set( handles.mouseMoveAreaH, 'FaceColor', 'g' )
+else
+    set( handles.mouseMoveAreaH, 'Xdata', [handles.mouseMoveStartT t] );
+end
+set( handles.soundAxes,'ButtonDownFcn',buttonDown );
+set( handles.mouseMoveAreaH,'HitTest','off' );
+set( get( handles.mouseMoveAreaH, 'Children' ), 'FaceAlpha', 0.4 );
+drawnow;
+   
+   
