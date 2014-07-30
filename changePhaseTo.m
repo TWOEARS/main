@@ -5,6 +5,8 @@ switch( phase )
         handles.phase = 1;
         set( handles.statusText, 'String', 'Phase1: live Labeling' );
         set( handles.helpText, 'String', sprintf([handles.genHelpTxt, '\n', handles.phase1bHelpTxt]) );
+        handles.onsets{end+1} = [];
+        handles.offsets{end+1} = [];
         handles.onsetsPre = [];
         handles.offsetsPre = [];
         handles.onsetsPre{1} = [];
@@ -15,8 +17,7 @@ switch( phase )
         handles.phase = 2;
         set( handles.statusText, 'String', 'Phase2: block Labeling / event finding' );
         set( handles.helpText, 'String', sprintf([handles.genHelpTxt, '\n', handles.phase2HelpTxt]) );
-        handles.onsets{end+1} = [];
-        handles.offsets{end+1} = [];
+        handles.shrinkrange = [inf -inf];
         if isempty( handles.onsetsPre{end} ) && ~handles.energyProceed
             handles.sStack = [handles.sStack; 1, length( handles.s ), 1];
         elseif isempty( handles.onsetsPre{end} ) && handles.energyProceed
@@ -86,13 +87,20 @@ switch( phase )
         nShift = floor( handles.shiftLen * handles.fs );
         for i = 1:length( handles.onsets{end} )
             onset = handles.onsets{end}(i);
+            if onset < handles.shrinkrange(1) || onset > handles.shrinkrange(2)
+                continue;
+            end
             offsetsDistance = onset - handles.offsets{end};
             offsetsDistance(offsetsDistance <= 0) = [];
             shortestOffsetDistance = min( offsetsDistance );
             shrinkOnset = max( [1, onset - shortestOffsetDistance, onset - shrinkLen + nShift] );
             handles.sStack = [shrinkOnset, min( length( handles.s ), onset + nShift ), -1; handles.sStack];
-
+        end
+        for i = 1:length( handles.offsets{end} )
             offset = handles.offsets{end}(i);
+            if offset < handles.shrinkrange(1) || offset > handles.shrinkrange(2)
+                continue;
+            end
             onsetsDistance = handles.onsets{end} - offset;
             onsetsDistance(onsetsDistance <= 0) = [];
             shortestOnsetDistance = min( onsetsDistance );
@@ -106,8 +114,15 @@ switch( phase )
         handles.l = 0;
         set( handles.statusText, 'String', '' );
         set( handles.helpText, 'String', sprintf([handles.genHelpTxt, '\n', handles.gen2HelpTxt]) );
+    case 5
+        handles.phase = 5;
+        set( handles.statusText, 'String', 'Phase5: block event adding/deleting' );
+        set( handles.helpText, 'String', sprintf([handles.genHelpTxt, '\n', handles.phase2HelpTxt]) );
+        handles.shrinkrange = [inf -inf];
 end
 
 set(findobj(handles.labelingGuiFig, 'Type', 'uicontrol'), 'Enable', 'off');
 drawnow;
 set(findobj(handles.labelingGuiFig, 'Type', 'uicontrol'), 'Enable', 'on');
+
+

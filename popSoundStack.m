@@ -19,9 +19,9 @@ if ~isempty( handles.sStack )
     else
         handles = popSoundStack( handles );
     end
-elseif isempty( handles.sStack )  &&  handles.phase == 2
+elseif isempty( handles.sStack )  && ( handles.phase == 2 || handles.phase == 5 )
     handles = changePhaseTo( 3, handles );
     handles = popSoundStack( handles );
-elseif isempty( handles.sStack ) && handles.phase == 3
+elseif isempty( handles.sStack ) && handles.phase >= 3
     handles = changePhaseTo( 4, handles );
 end

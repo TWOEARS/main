@@ -6,12 +6,13 @@ drawnow;
 
 onoffsChanged = false;
 
-if handles.l == 1  &&  l == 1
+if handles.l >= 0  &&  l > 0
     onoffsChanged = true;
     handles.onsets{end} = [handles.onsets{end} handles.sStart];
     handles.offsets{end} = [handles.offsets{end} handles.sEnd];
+    handles.shrinkrange = [min(handles.shrinkrange(1),handles.sStart-1) max(handles.shrinkrange(2),handles.sEnd+1)];
 end
-if handles.l < 0  &&  l < 0
+if handles.l <= 0  &&  l < 0
     onoffsChanged = true;
     i = 1;
     while i <= length( handles.onsets{end} )
@@ -30,6 +31,7 @@ if handles.l < 0  &&  l < 0
         end
         i = i + 1;
     end
+    handles.shrinkrange = [min(handles.shrinkrange(1),handles.sStart-1) max(handles.shrinkrange(2),handles.sEnd+1)];
     shrinkLen = handles.sEnd - handles.sStart;
     nShift = floor( handles.shiftLen * handles.fs );
     if handles.l == -1

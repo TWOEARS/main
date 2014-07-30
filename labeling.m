@@ -73,14 +73,14 @@ handles.genHelpTxt = sprintf( [ ...
     '"%s" to save and proceed to the next sound.'], ...
     handles.stopKey, handles.saveAndStopKey, handles.saveAndProceedKey );
 handles.phase1aHelpTxt = sprintf( [
-    'Phase 1: Press "%s" while hearing the event. Press "%s" to proceed to phase 2.\n'], ...
+    'live labeling: Press "%s" while hearing the event. Press "%s" to proceed to phase 2.\n'], ...
     handles.preLabelKey, handles.stopPreLabelingKey );
 handles.phase1bHelpTxt = sprintf( [
-    'Phase 1: Press "%s" while hearing the event. ' ...
+    'live labeling: Press "%s" while hearing the event. ' ...
     'Press "%s" to proceed to phase 2 ("%s": based on energy).\n'], ...
     handles.preLabelKey, handles.stopPreLabelingKey, handles.energyProceedKey );
 handles.phase2HelpTxt = sprintf( [
-    'Phase 2: Press "%s" if what you hear includes the event, "%s" if it is only the event, ' ...
+    'block labeling: Press "%s" if what you hear includes the event, "%s" if it is only the event, ' ...
     'and "%s" if it doesn´t include the event.\n'], ...
     handles.eventIncludedKey, handles.onlyEventKey, handles.noEventKey );
 handles.gen2HelpTxt = sprintf( [
@@ -164,12 +164,12 @@ switch( lower( eventdata.Key ) )
         if isfield( handles, 'player' ) && isa( handles.player, 'audioplayer' ) && isplaying( handles.player )
             handles = stopPlayer( handles );
         end
-        set( handles.statusText, 'String', 'Playback stopped' );
+        handles = changePhaseTo( 4, handles );
     case handles.stopKey
         if isfield( handles, 'player' ) && isa( handles.player, 'audioplayer' ) && isplaying( handles.player )
             handles = stopPlayer( handles );
         end
-        set( handles.statusText, 'String', 'Playback stopped' );
+        handles = changePhaseTo( 4, handles );
     case handles.saveAndProceedKey
         saveOnoffs( handles );
         if get( handles.soundsList,'Value' ) < length( get( handles.soundsList, 'String' ) )
@@ -236,7 +236,7 @@ if handles.phase == 1
                 handles = popSoundStack( handles );
             end
     end
-elseif handles.phase > 1
+elseif handles.phase == 2 || handles.phase == 3
     if isfield( handles, 'player' ) && isa( handles.player, 'audioplayer' ) && isplaying( handles.player )
         switch( lower( eventdata.Key ) )
             case handles.onlyEventKey
@@ -255,6 +255,28 @@ elseif handles.phase > 1
                 handles = popSoundStack( handles );
             case handles.noEventKey
                 handles = pushLabel( handles, -1 );
+                handles = popSoundStack( handles );
+        end
+    end
+elseif handles.phase == 5
+    if isfield( handles, 'player' ) && isa( handles.player, 'audioplayer' ) && isplaying( handles.player )
+        switch( lower( eventdata.Key ) )
+            case handles.onlyEventKey
+                handles = pushLabel( handles, 1 );
+                handles = popSoundStack( handles );
+            case handles.eventIncludedKey
+                curLen = handles.sEnd - handles.sStart;
+                if curLen / handles.fs < handles.minBlockLen  ||  handles.l < 0
+                    handles = pushLabel( handles, 1 );
+                else
+                    sep = floor( curLen*2/5 ) + randi( floor( curLen/5 ) );
+                    handles.sStack = [handles.sStack;
+                        handles.sStart, handles.sStart + sep, 0;
+                        handles.sStart + sep + 1, handles.sEnd, 0];
+                end
+                handles = popSoundStack( handles );
+            case handles.noEventKey
+                handles = pushLabel( handles, -5 );
                 handles = popSoundStack( handles );
         end
     end
@@ -347,8 +369,8 @@ handles.offsetsInterp = [];
 handles.savedOnsets = [];
 handles.savedOffsets = [];
 
-handles = changePhaseTo( 1, handles );
 handles = openAnnots( handles );
+handles = changePhaseTo( 1, handles );
 
 guidata( hObject, handles );
 handles = popSoundStack( handles );
@@ -426,7 +448,8 @@ t = t(1,1);
 plotSound( handles.labelingGuiFig );
 onset = floor( handles.mouseMoveStartT * handles.fs );
 offset = min( length( handles.s ), ceil( t * handles.fs ) );
-handles.sStack = [min(onset, offset), max(onset, offset), 1];
+handles.sStack = [min(onset, offset), max(onset, offset), 0];
+handles = changePhaseTo( 5, handles );
 guidata( hObject, handles );
 handles = popSoundStack( handles );
 guidata( hObject, handles );
