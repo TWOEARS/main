@@ -20,8 +20,8 @@ if annotFid ~= -1
                 annotLine = fgetl( annotFid );
                 if ~ischar( annotLine ), break, end
                 onsetOffset = sscanf( annotLine, '%f' );
-                handles.onsets{1} = [handles.onsets{1} (onsetOffset(1) * handles.fs)];
-                handles.offsets{1} = [handles.offsets{1} (onsetOffset(2) * handles.fs)];
+                handles.onsets{1} = [handles.onsets{1} floor(onsetOffset(1) * handles.fs)];
+                handles.offsets{1} = [handles.offsets{1} floor(onsetOffset(2) * handles.fs)];
             end
             handles = cleanOnOffsets( handles );
             handles.savedOnsets = handles.onsetsInterp;

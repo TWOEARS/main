@@ -36,6 +36,7 @@ handles.currentKey = 'nil';
 handles.saveAndStopKey = 's';
 handles.stopKey = 'escape';
 handles.saveAndProceedKey = 'space';
+handles.verifyKey = 'insert';
 handles.onlyEventKey = 'end';
 handles.eventIncludedKey = 'return';
 handles.noEventKey = 'delete';
@@ -61,14 +62,20 @@ handles.phase2HelpTxt = sprintf( [
     'and "%s" if it doesn´t include the event.\n' ...
     'If you cannot recognize because the sample is too short, press "%s".\n'], ...
     handles.eventIncludedKey, handles.onlyEventKey, handles.noEventKey, handles.tooShortKey );
+handles.phase6HelpTxt = sprintf( [
+    'verification: Press "%s" if what you hear includes the event, "%s" if it is only the event, ' ...
+    'and "%s" if it doesn´t include the event.\n' ...
+    'If you cannot recognize because the sample is too short, press "%s".\n'], ...
+    handles.eventIncludedKey, handles.onlyEventKey, handles.noEventKey, handles.tooShortKey );
 handles.phase3HelpTxt = sprintf( [
     'onset/offset refining: Press "%s" or "%s" if what you hear includes the event, ' ...
     'and "%s" if it doesn´t include the event.\n'], ...
     handles.eventIncludedKey, handles.onlyEventKey, handles.noEventKey );
 handles.gen2HelpTxt = sprintf( [
     '"%s" starts an additional round of labeling for this sound.\n' ...
-    'select range in sound with mouse to play and label it.\n'], ...
-    handles.newLabelingRoundKey );
+    'select range in sound with mouse to play and label it.\n' ...
+    'Press "%s" to start verification of events.\n'], ...
+    handles.newLabelingRoundKey, handles.verifyKey );
 set( handles.helpText, 'String', handles.gen0HelpTxt );
 
 if exist( 'labeling_settings.mat', 'file' )
@@ -163,12 +170,6 @@ switch( lower( eventdata.Key ) )
             soundsList_Callback( handles.soundsList, [], handles );
         end
         handles = guidata( hObject );
-    case handles.newLabelingRoundKey
-        if ~isfield( handles, 'player' ) || ~isa( handles.player, 'audioplayer' ) || ~isplaying( handles.player )
-            handles = changePhaseTo( 1, handles );
-            handles = popSoundStack( handles );
-        end
-        guidata( hObject, handles );
 end
 if handles.phase == 1
     switch( lower( eventdata.Key ) )
@@ -276,7 +277,41 @@ elseif handles.phase == 5
                     max( 1, handles.sStart - incLen ), min( length( handles.s ), handles.sEnd + incLen ), 0];
                 handles = popSoundStack( handles );
             case handles.noEventKey
-                handles = pushLabel( handles, -1 ); %deletion of event, but no shrinking at this point
+                handles = pushLabel( handles, -1 ); 
+                handles = popSoundStack( handles );
+        end
+    end
+elseif handles.phase == 4
+    switch( lower( eventdata.Key ) )
+        case handles.newLabelingRoundKey
+            if ~isfield( handles, 'player' ) || ~isa( handles.player, 'audioplayer' ) || ~isplaying( handles.player )
+                handles = changePhaseTo( 1, handles );
+                handles = popSoundStack( handles );
+            end
+        case handles.verifyKey
+            handles = changePhaseTo( 6, handles );
+            handles = popSoundStack( handles );
+    end
+elseif handles.phase == 6
+    if isfield( handles, 'player' ) && isa( handles.player, 'audioplayer' ) && isplaying( handles.player )
+        switch( lower( eventdata.Key ) )
+            case handles.onlyEventKey
+                handles = popSoundStack( handles );
+            case handles.eventIncludedKey
+                curLen = handles.sEnd - handles.sStart;
+                sep = floor( curLen*2/5 ) + randi( floor( curLen/5 ) );
+                handles.phase6Stack = [handles.phase6Stack;
+                    handles.sStart, handles.sStart + sep, 0;
+                    handles.sStart + sep + 1, handles.sEnd, 0];
+                handles = popSoundStack( handles );
+            case handles.tooShortKey
+                curLen = handles.sEnd - handles.sStart;
+                incLen = floor( curLen*0.25 );
+                handles.phase6Stack = [handles.phase6Stack;
+                    max( 1, handles.sStart - incLen ), min( length( handles.s ), handles.sEnd + incLen ), 0];
+                handles = popSoundStack( handles );
+            case handles.noEventKey
+                handles = pushLabel( handles, -1 ); 
                 handles = popSoundStack( handles );
         end
     end
