@@ -25,7 +25,7 @@ switch( phase )
             enMin = 0.01;
             enEnv(enEnv < enMin) = 0;
             enEnv(enEnv >= enMin) = 1;
-            enEnvDelta = [enEnv; 0] - [0; enEnv];
+            enEnvDelta = [enEnv, 0] - [0, enEnv];
             envFsFactor = handles.fs / handles.fsenv;
             onsets = floor( find( enEnvDelta == +1 ) .* envFsFactor );
             offsets = ceil( find( enEnvDelta == -1 ) .* envFsFactor );
