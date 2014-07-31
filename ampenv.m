@@ -4,12 +4,48 @@ if size( y, 2 ) == 2
     [~,ii] = max( std( y ) );
     y = y(:,ii);
 end
-y = abs( y );
-y = y / max( y );
-winSize = 0.33 * fs;
-ye = filter( pdf( 'Normal', -floor(winSize/2):floor(winSize/2), 0, floor(winSize/6) ), 1, [y; zeros( ceil(winSize/2), 1 )] );
-ye = [ye(ceil(winSize/2):end); zeros(ceil(winSize),1)];
-ye = ye / max( abs( ye ) );
+
+yep = y;
+yen = y;
+xep = 1:length(y);
+xen = 1:length(y);
+
+del = 1;
+while ~isempty(del)
+    del = zeros(size(yep));
+    for k = 2:length(yep)-1
+        if xep(k) - xep(k-1) >= fs * 0.01, continue, end
+        if ~(yep(k-1) < yep(k) && yep(k) > yep(k+1)) % not maximum
+            del(k) = k;
+        end
+    end
+    del(del==0) = [];
+    yep(del) = [];
+    xep(del) = [];
+end
+
+del = 1;
+while ~isempty(del)
+    del = zeros(size(yen));
+    for k = 2:length(yen)-1
+        if xen(k) - xen(k-1) >= fs * 0.01, continue, end
+        if ~(yen(k-1) > yen(k) && yen(k) < yen(k+1)) % not minimum
+            del(k) = k;
+        end
+    end
+    del(del==0) = [];
+    yen(del) = [];
+    xen(del) = [];
+end
+
+yep = interp1( xep, yep, 1:length(y) );
+yen = interp1( xen, yen, 1:length(y) );
+yep = yep / max( abs( yep ) );
+yen = yen / max( abs( yen ) );
 
 fsr = min( fs, ceil( fs * 1000 / length( y ) ) );
-ye = resample( ye, fsr, fs );
+yep = resample( yep, fsr, fs );
+yen = resample( yen, fsr, fs );
+
+ye(1,:) = yep;
+ye(2,:) = yen;

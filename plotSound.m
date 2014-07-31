@@ -8,11 +8,11 @@ end
 buttonDown = get(handles.soundAxes, 'ButtonDownFcn');
 
 hold( handles.soundAxes, 'off' );
-h = plot( handles.soundAxes, [1:length(handles.senv)]./handles.fsenv, handles.senv, 'b' );
+h = plot( handles.soundAxes, [1:length(handles.senv)]./handles.fsenv, handles.senv(1,:), 'b' );
 set(h,'HitTest','off');
 set(h, 'Zdata', -1 * ones(1,length(handles.senv)));
 hold( handles.soundAxes, 'on' );
-h = plot( handles.soundAxes, [1:length(handles.senv)]./handles.fsenv, -handles.senv, 'b' );
+h = plot( handles.soundAxes, [1:length(handles.senv)]./handles.fsenv, handles.senv(2,:), 'b' );
 set(h,'HitTest','off');
 set(h, 'Zdata', -1 * ones(1,length(handles.senv)));
 

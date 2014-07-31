@@ -21,7 +21,7 @@ switch( phase )
         if isempty( handles.onsetsPre{end} ) && ~handles.energyProceed
             handles.sStack = [handles.sStack; 1, length( handles.s ), 1];
         elseif isempty( handles.onsetsPre{end} ) && handles.energyProceed
-            enEnv = handles.senv;
+            enEnv = handles.senv(1,:);
             enMin = 0.01;
             enEnv(enEnv < enMin) = 0;
             enEnv(enEnv >= enMin) = 1;
