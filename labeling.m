@@ -1,29 +1,5 @@
 function varargout = labeling(varargin)
-% LABELING MATLAB code for labeling.fig
-%      LABELING, by itself, creates a new LABELING or raises the existing
-%      singleton*.
-%
-%      H = LABELING returns the handle to a new LABELING or the handle to
-%      the existing singleton*.
-%
-%      LABELING('CALLBACK',hObject,eventData,handles,...) calls the local
-%      function named CALLBACK in LABELING.M with the given input arguments.
-%
-%      LABELING('Property','Value',...) creates a new LABELING or raises the
-%      existing singleton*.  Starting from the left, property value pairs are
-%      applied to the GUI before labeling_OpeningFcn gets called.  An
-%      unrecognized property name or invalid value makes property application
-%      stop.  All inputs are passed to labeling_OpeningFcn via varargin.
-%
-%      *See GUI Options on GUIDE's Tools menu.  Choose "GUI allows only one
-%      instance to run (singleton)".
-%
-% See also: GUIDE, GUIDATA, GUIHANDLES
-
-% Edit the above text to modify the response to help labeling
-
 % Last Modified by GUIDE v2.5 31-Jul-2014 14:11:56
-
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
 gui_State = struct('gui_Name',       mfilename, ...
