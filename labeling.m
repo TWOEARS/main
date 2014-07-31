@@ -22,7 +22,7 @@ function varargout = labeling(varargin)
 
 % Edit the above text to modify the response to help labeling
 
-% Last Modified by GUIDE v2.5 29-Jul-2014 18:00:14
+% Last Modified by GUIDE v2.5 31-Jul-2014 14:11:56
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
