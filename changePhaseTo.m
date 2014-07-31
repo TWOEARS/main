@@ -7,10 +7,6 @@ switch( phase )
         set( handles.helpText, 'String', sprintf([handles.genHelpTxt, '\n', handles.phase1bHelpTxt]) );
         handles.onsets{end+1} = [];
         handles.offsets{end+1} = [];
-        handles.onsetsPre = [];
-        handles.offsetsPre = [];
-        handles.onsetsPre{1} = [];
-        handles.offsetsPre{1} = [];
         handles.overrun = false;
         handles.sStack = [1, length(handles.s), 1];
     case 2

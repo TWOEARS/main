@@ -367,11 +367,16 @@ handles.onsetsInterp = [];
 handles.offsetsInterp = [];
 handles.savedOnsets = [];
 handles.savedOffsets = [];
+handles.sStack = [];
+handles.onsetsPre = [];
+handles.offsetsPre = [];
+handles.onsetsPre{1} = [];
+handles.offsetsPre{1} = [];
 
 handles = openAnnots( handles );
-handles = changePhaseTo( 1, handles );
 
 guidata( hObject, handles );
+
 handles = popSoundStack( handles );
 guidata( hObject, handles );
 
