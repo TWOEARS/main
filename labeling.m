@@ -384,7 +384,7 @@ set( findobj(hObject, 'Type', 'uicontrol'), 'Enable', 'on' );
 set(hObject,'Interruptible','on');
 
 plotSound( hObject );
-set( handles.textfield, 'String', '' );
+printOnOffsets( handles );
 set( findobj(hObject, 'Type', 'uicontrol'), 'Enable', 'off' );
 drawnow;
 set( findobj(hObject, 'Type', 'uicontrol'), 'Enable', 'on' );

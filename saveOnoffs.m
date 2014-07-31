@@ -1,5 +1,9 @@
 function handles = saveOnoffs( handles )
 
+if isequal( handles.savedOnsets, handles.onsetsInterp ) || isequal( handles.savedOffsets, handles.offsetsInterp )
+    return;
+end
+
 selectedSound = handles.soundfile;
 labelFileName = [handles.soundsDir '\' selectedSound '.txt'];
 

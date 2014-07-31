@@ -43,39 +43,8 @@ if handles.l <= 0  &&  l < 0
 end
 
 if onoffsChanged
-    if ~isempty( handles.onsets )
-        handles.onsets{end} = sort( handles.onsets{end} );
-        handles.offsets{end} = sort( handles.offsets{end} );
-        i = 2;
-        while i <= length( handles.onsets{end} )
-            if handles.onsets{end}(i) <= handles.offsets{end}(i-1) + 1
-                handles.offsets{end}(i-1) = handles.offsets{end}(i);
-                handles.onsets{end}(i) = [];
-                handles.offsets{end}(i) = [];
-            else
-                i = i + 1;
-            end
-        end
-        
-        [levelsInterp, interpFsFactor] = onoffInterp( handles.onsets, handles.offsets, handles );
-        lmin = 1 / 2;
-        levelsInterp(levelsInterp < lmin) = 0;
-        levelsInterp(levelsInterp >= lmin) = 1;
-        levelsInterpDelta = [levelsInterp, 0] - [0, levelsInterp];
-        handles.onsetsInterp = find( levelsInterpDelta == +1 ) .* interpFsFactor;
-        handles.offsetsInterp = find( levelsInterpDelta == -1 ) .* interpFsFactor;
-    else
-        handles.onsetsInterp = [];
-        handles.offsetsInterp = [];
-    end
-    
-    tout = '';
-    for i = 1:length(handles.onsets)
-        tout = [tout, sprintf( '\nonsets{%d}: %s\n', i, mat2str( double(int64(100*(handles.onsets{i} ./ handles.fs)))/100 ) ),  sprintf( 'offsets{%d}: %s\n', i, mat2str( double(int64(100*(handles.offsets{i} ./ handles.fs)))/100 ) )];
-    end
-    tout = [tout, sprintf( '\ninterpolated onsets: %s\n', mat2str( double(int64(100*(handles.onsetsInterp ./ handles.fs)))/100 ) ),  sprintf( 'interpolated offsets: %s\n', mat2str( double(int64(100*(handles.offsetsInterp ./ handles.fs)))/100 ) )];
-    set( handles.textfield, 'String', tout );
-    
+    handles = cleanOnOffsets( handles );
+    printOnOffsets( handles );
     guidata( handles.labelingGuiFig, handles );
     plotSound( handles.labelingGuiFig );
 end
