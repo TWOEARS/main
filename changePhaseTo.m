@@ -3,7 +3,7 @@ function handles = changePhaseTo( phase, handles )
 switch( phase )
     case 1
         handles.phase = 1;
-        set( handles.statusText, 'String', 'Phase1: live Labeling' );
+        set( handles.statusText, 'String', 'live Labeling' );
         set( handles.helpText, 'String', sprintf([handles.genHelpTxt, '\n', handles.phase1bHelpTxt]) );
         handles.onsets{end+1} = [];
         handles.offsets{end+1} = [];
@@ -15,7 +15,7 @@ switch( phase )
         handles.sStack = [1, length(handles.s), 1];
     case 2
         handles.phase = 2;
-        set( handles.statusText, 'String', 'Phase2: block Labeling / event finding' );
+        set( handles.statusText, 'String', 'block Labeling / event finding' );
         set( handles.helpText, 'String', sprintf([handles.genHelpTxt, '\n', handles.phase2HelpTxt]) );
         handles.shrinkrange = [inf -inf];
         if isempty( handles.onsetsPre{end} ) && ~handles.energyProceed
@@ -82,8 +82,9 @@ switch( phase )
         end
     case 3
         handles.phase = 3;
-        set( handles.statusText, 'String', 'Phase2: block Labeling / event shrinking' );
-        shrinkLen = floor( handles.fs * handles.minBlockLen );
+        set( handles.statusText, 'String', 'onset/offset refining' );
+        set( handles.helpText, 'String', sprintf([handles.genHelpTxt, '\n', handles.phase3HelpTxt]) );
+        shrinkLen = floor( handles.fs * 0.3 );
         nShift = floor( handles.shiftLen * handles.fs );
         for i = 1:length( handles.onsets{end} )
             onset = handles.onsets{end}(i);

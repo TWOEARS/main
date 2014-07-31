@@ -39,6 +39,7 @@ handles.saveAndProceedKey = 'space';
 handles.onlyEventKey = 'end';
 handles.eventIncludedKey = 'return';
 handles.noEventKey = 'delete';
+handles.tooShortKey = 'pagedown';
 handles.newLabelingRoundKey = 'home';
 handles.preLabelKey = 'l';
 handles.stopPreLabelingKey = 'backspace';
@@ -57,6 +58,11 @@ handles.phase1bHelpTxt = sprintf( [
     handles.preLabelKey, handles.stopPreLabelingKey, handles.energyProceedKey );
 handles.phase2HelpTxt = sprintf( [
     'block labeling: Press "%s" if what you hear includes the event, "%s" if it is only the event, ' ...
+    'and "%s" if it doesn´t include the event.\n' ...
+    'If you cannot recognize because the sample is too short, press "%s".\n'], ...
+    handles.eventIncludedKey, handles.onlyEventKey, handles.noEventKey, handles.tooShortKey );
+handles.phase3HelpTxt = sprintf( [
+    'onset/offset refining: Press "%s" or "%s" if what you hear includes the event, ' ...
     'and "%s" if it doesn´t include the event.\n'], ...
     handles.eventIncludedKey, handles.onlyEventKey, handles.noEventKey );
 handles.gen2HelpTxt = sprintf( [
@@ -159,8 +165,6 @@ switch( lower( eventdata.Key ) )
         handles = guidata( hObject );
     case handles.newLabelingRoundKey
         if ~isfield( handles, 'player' ) || ~isa( handles.player, 'audioplayer' ) || ~isplaying( handles.player )
-            handles.minBlockLen = max( 0.1, handles.minBlockLen * 0.5 );
-            handles.shiftLen = max( 0.02, handles.shiftLen * 0.5 );
             handles = changePhaseTo( 1, handles );
             handles = popSoundStack( handles );
         end
@@ -217,7 +221,7 @@ if handles.phase == 1
                 handles = popSoundStack( handles );
             end
     end
-elseif handles.phase == 2 || handles.phase == 3
+elseif handles.phase == 2
     if isfield( handles, 'player' ) && isa( handles.player, 'audioplayer' ) && isplaying( handles.player )
         switch( lower( eventdata.Key ) )
             case handles.onlyEventKey
@@ -225,17 +229,30 @@ elseif handles.phase == 2 || handles.phase == 3
                 handles = popSoundStack( handles );
             case handles.eventIncludedKey
                 curLen = handles.sEnd - handles.sStart;
-                if curLen / handles.fs < handles.minBlockLen  ||  handles.l < 0
-                    handles = pushLabel( handles, 1 );
-                else
-                    sep = floor( curLen*2/5 ) + randi( floor( curLen/5 ) );
-                    handles.sStack = [handles.sStack;
-                        handles.sStart, handles.sStart + sep, 1;
-                        handles.sStart + sep + 1, handles.sEnd, 1];
-                end
+                sep = floor( curLen*2/5 ) + randi( floor( curLen/5 ) );
+                handles.sStack = [handles.sStack;
+                    handles.sStart, handles.sStart + sep, 1;
+                    handles.sStart + sep + 1, handles.sEnd, 1];
+                handles = popSoundStack( handles );
+            case handles.tooShortKey
+                curLen = handles.sEnd - handles.sStart;
+                incLen = floor( curLen*0.25 );
+                handles.sStack = [handles.sStack;
+                    max( 1, handles.sStart - incLen ), min( length( handles.s ), handles.sEnd + incLen ), 1];
                 handles = popSoundStack( handles );
             case handles.noEventKey
+                handles = popSoundStack( handles );
+        end
+    end
+elseif handles.phase == 3
+    if isfield( handles, 'player' ) && isa( handles.player, 'audioplayer' ) && isplaying( handles.player )
+        switch( lower( eventdata.Key ) )
+            case handles.noEventKey
                 handles = pushLabel( handles, -1 );
+                handles = popSoundStack( handles );
+            case handles.onlyEventKey
+                handles = popSoundStack( handles );
+            case handles.eventIncludedKey
                 handles = popSoundStack( handles );
         end
     end
@@ -247,17 +264,19 @@ elseif handles.phase == 5
                 handles = popSoundStack( handles );
             case handles.eventIncludedKey
                 curLen = handles.sEnd - handles.sStart;
-                if curLen / handles.fs < handles.minBlockLen  ||  handles.l < 0
-                    handles = pushLabel( handles, 1 );
-                else
-                    sep = floor( curLen*2/5 ) + randi( floor( curLen/5 ) );
-                    handles.sStack = [handles.sStack;
-                        handles.sStart, handles.sStart + sep, 0;
-                        handles.sStart + sep + 1, handles.sEnd, 0];
-                end
+                sep = floor( curLen*2/5 ) + randi( floor( curLen/5 ) );
+                handles.sStack = [handles.sStack;
+                    handles.sStart, handles.sStart + sep, 0;
+                    handles.sStart + sep + 1, handles.sEnd, 0];
+                handles = popSoundStack( handles );
+            case handles.tooShortKey
+                curLen = handles.sEnd - handles.sStart;
+                incLen = floor( curLen*0.25 );
+                handles.sStack = [handles.sStack;
+                    max( 1, handles.sStart - incLen ), min( length( handles.s ), handles.sEnd + incLen ), 0];
                 handles = popSoundStack( handles );
             case handles.noEventKey
-                handles = pushLabel( handles, -5 );
+                handles = pushLabel( handles, -1 ); %deletion of event, but no shrinking at this point
                 handles = popSoundStack( handles );
         end
     end
@@ -341,7 +360,6 @@ smax = max( max( abs( handles.s ) ) );
 handles.s = handles.s ./ smax;
 [handles.senv, handles.fsenv] = ampenv( handles.s, handles.fs );
 
-handles.minBlockLen = 0.5;
 handles.shiftLen = 0.1;
 handles.onsets = [];
 handles.offsets = [];
