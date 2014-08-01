@@ -26,9 +26,6 @@ if annotFid ~= -1
             handles = cleanOnOffsets( handles );
             handles.savedOnsets = handles.onsetsInterp;
             handles.savedOffsets = handles.offsetsInterp;
-            handles = changePhaseTo( 4, handles );
-        case 'No'
-            handles = changePhaseTo( 1, handles );
     end
     fclose( annotFid );
 end

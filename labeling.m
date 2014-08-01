@@ -409,6 +409,11 @@ handles.onsetsPre{1} = [];
 handles.offsetsPre{1} = [];
 
 handles = openAnnots( handles );
+if isempty( handles.savedOnsets )
+    handles = changePhaseTo( 1, handles );
+else
+    handles = changePhaseTo( 4, handles );
+end
 
 guidata( hObject, handles );
 
