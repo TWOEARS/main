@@ -35,18 +35,18 @@ function count = consoleprintf(style,format,varargin)
   try useDesktop = usejava('desktop'); catch, useDesktop = false; end
   if isdeployed | ~useDesktop %#ok<OR2> - for Matlab 6 compatibility
 
-      NORMAL='\033[01;37;37m';
+      % See: http://misc.flogisoft.com/bash/tip_colors_and_formatting
+      % for a discussion of the color codes and resettings to normal
+      NORMAL='\033[00;39;39m'; % if you have another normal setting place it here. 
+                               % For example I use bold terminal text and a different white color: NORMAL='\033[01;37;37m';
       BOLD='\033[1m';
       UNDERLINE='\033[4m';
-      % do not display any formatting - use simple fprintf()
-      % See: http://undocumentedmatlab.com/blog/bold-color-text-in-the-command-window/#comment-103035
-      % Also see: https://mail.google.com/mail/u/0/?ui=2&shva=1#all/1390a26e7ef4aa4d
-      % Also see: https://mail.google.com/mail/u/0/?ui=2&shva=1#all/13a6ed3223333b21
+      % Resetting underline and bold after applying them
       if underlineFlag
-          format = [UNDERLINE format '\033[0m'];
+          format = [UNDERLINE format '\033[24m'];
       end
       if boldFlag
-          format = [BOLD format '\033[0m'];
+          format = [BOLD format '\033[21m'];
       end
       format = [NORMAL style format NORMAL];
     
