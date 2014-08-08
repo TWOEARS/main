@@ -503,6 +503,13 @@ function cells = m2c(data)
   %datasize = size(data);  cells = mat2cell(data,ones(1,datasize(1)),ones(1,datasize(2)));
   cells = num2cell(data);
 
+% Convert a Matlab RGB vector into a known style name (e.g., '[255,37,0]')
+function styleName = getColorStyle(rgb)
+  intColor = int32(rgb*255);
+  javaColor = java.awt.Color(intColor(1), intColor(2), intColor(3));
+  styleName = sprintf('[%d,%d,%d]',intColor);
+  com.mathworks.services.Prefs.setColorPref(styleName,javaColor);
+
 % Display the help and demo
 function showDemo(majorVersion,minorVersion)
   fprintf('cprintf displays formatted text in the Command Window.\n\n');
