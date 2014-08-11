@@ -8,6 +8,8 @@ function [fileNames,nFiles] = readFileList(fileList)
 % we want to have all files in the subdir "training1" listed in the fileList
 % "training1.flist", then run:
 % $ ls training1/* > training1.flist
+%
+% Dependency: WP1
 
 % TODO: expand this function to handle more than one given file list.
 
@@ -17,7 +19,6 @@ function [fileNames,nFiles] = readFileList(fileList)
 narginchk(1,1);
 
 % Reading the file list
-import xml.*
 fileList = fullfile(xml.dbPath, fileList);
 [fileListPath,~,~] = fileparts(fileList);
 fid = fopen(fileList);
