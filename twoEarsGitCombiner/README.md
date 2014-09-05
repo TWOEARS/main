@@ -27,7 +27,7 @@ Usage as scenario-creator
 </requirements>
 ------------------------------------------
 For each "repoRequirement", the according path will be added temporarily to matlab.
-If you put a "sub" attribute to the requirement, the specified subpath will be added instead of the repository home path.
+If you put a "sub" attribute to the requirement, the specified subpath and all subdirectories will be added instead of the repository home path.
 If you put a "branch" attribute to the requirement, it will be checked that your repository is checked out into that specific branch and warn if otherwise.
 If you put a "startup" attribute to the requirement, the respective function will be executed after adding the path of this requirement.
 3.) As first action in your scenario script, call "setupRepoConfig( 'yourScenarioSetup.xml' )".
