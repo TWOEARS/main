@@ -7,9 +7,25 @@ This tool, in particular the "setupRepoConfig" function will help you setup the 
 Usage as scenario-user
 ======================
 
+0.) Your system must know the command "git"; i.e., put your git binary path into your system path, if it is not already.
 1.) Permanently add the Git Combiner path to your matlab pathes.
-2.) Update "repoConfig.xml" (in this directory) to your specific pathes. The structure is very self-explaining.
-3.) That's it. Start the script that's been build using the Combiner.
+2.) Put an xml file like following with name "reposConfig.xml" into this directory; adapt it to your specific pathes. The structure is very self-explaining:
+------------------------------------------
+<?xml version="1.0" encoding="utf-8"?>
+<repoPaths>
+<wp1>C:\Projekte\twoEars\wp1git</wp1>
+<wp2>C:\Projekte\twoEars\wp2git</wp2>
+<wp3>C:\Projekte\twoEars\wp3git</wp3>
+<wp4>C:\Projekte\twoEars\wp4git</wp4>
+<wp5>C:\Projekte\twoEars\wp5git</wp5>
+<wp6>C:\Projekte\twoEars\wp6git</wp6>
+<data>C:\Projekte\twoEars\dataGit</data>
+<ssr>C:\Projekte\twoEars\twoears-ssr</ssr>
+<tools>C:\Projekte\twoEars\twoears-tools</tools>
+<scenarios>C:\Projekte\twoEars\scenariosGit</scenarios>
+</repoPaths>
+------------------------------------------
+3.) That's it. You can now start any script that's using the Combiner function "setupRepoConfig".
 
 
 Usage as scenario-creator
