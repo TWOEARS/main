@@ -30,6 +30,7 @@ fsDesired = parser.Results.Samplingrate;
 doNormalization = parser.Results.Normalize;
 nZeros = parser.Results.Zeropadding;
 sigLength = parser.Results.Length;
+if ~iscell(audioFiles), audioFiles = {audioFiles}; end
 
 
 %% === Read audio files ===
