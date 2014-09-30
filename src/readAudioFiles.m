@@ -1,44 +1,60 @@
-function signals = readAudioFiles(audioFiles,fsRef)
+function signals = readAudioFiles(audioFiles,varargin)
+%READAUDIOFILES returns a matrix containing mono signals as columns
+%
+%   readAudioFiles(audioFiles) reads all signals from the files specified in the
+%   audioFiles cell array and returns a matrix with each signal as a column.
+%   Note, that all files that have more than one channel are automatically
+%   down-mixed into a mono file.
+%
+%   Possible options and its default values:
+%
+%       'Samplingrate' - Desired samplingrate of output signals, default: 44100
+%       'Normalize'    - Normalize output signals to -1..1, default: false
+%       'Zeropadding'  - Adds nSamples of zeros at the beginning and end, default: 0
+%       'Length'       - Specify length of output signals, default: maximum of
+%                        input signals
 
-% Check for proper input arguments
-if nargin ~= 2
-    help(mfilename);
-    error('Wrong number of input arguments!')
-end
+% AUTHOR: Hagen Wierstorf
 
+
+%% === Parse input arguments ===
+parser = inputParser;
+% Set default values for optional arguments
+parser.addOptional('Samplingrate',44100);
+parser.addOptional('Normalize',false);
+parser.addOptional('Zeropadding',0);
+parser.addOptional('Length',[]);
+% Parse input arguments
+parser.parse(varargin{:});
+fsDesired = parser.Results.Samplingrate;
+doNormalization = parser.Results.Normalize;
+nZeros = parser.Results.Zeropadding;
+sigLength = parser.Results.Length;
+
+
+%% === Read audio files ===
 % Number of audio files
 nFiles = numel(audioFiles);
-
-% Allocate memory
-nSamples = zeros(nFiles,2);
-fsOrig   = zeros(nFiles,1);
-
-% Loop over number of audio files
-for ii = 1 : nFiles
-    [nSamples(ii,:),fsOrig(ii)] = wavread(audioFiles{ii},'size'); %#ok
+% Get information about all signals
+for ii = 1:nFiles
+    info(ii) = audioinfo(audioFiles{ii});
 end
-
-% Overall duration
-nSamplesMax = round(max(nSamples(:,1)) * (fsRef/max(fsOrig)));
-
+% Set length of signal in samples if not specified
+if isempty(sigLength)
+    sigLength = round(max(info.Duration)*fsDesired) + 2*nZeros;
+end
 % Allocate memory for signals
-signals = zeros(nSamplesMax,nFiles);
-
+signals = zeros(sigLength,nFiles);
 % Loop over number of audio files
-for ii = 1 : nFiles
+for ii = 1:nFiles
     % Read ii-th signal
-    [currSig,fs] = wavread(audioFiles{ii}); %#ok
-    
-    % Resampling, if required
-    currSig = resample(currSig,fsRef,fs);
-
-    % Replicate signal to match longest signal
-    currSig = repmat(currSig,[ceil(nSamplesMax/size(currSig,1)) 1]);
-    
-    % Trim edges
-    signals(:,ii) = currSig(1:nSamplesMax);
-    
-    % Normalize ii-th signal by its RMS value
-    signals(:,ii) = signals(:,ii) / rms(signals(:,ii));
+    [currSig,fs] = audioread(audioFiles{ii});
+    % Mono downsampling and resampling, if required
+    currSig = forceMono(resample(currSig,fsDesired,fs));
+    % Add zeros at the end to match longest signal
+    signals(:,ii) = [zeros(nZeros,1); currSig(1:min(end,sigLength-2*nZeros)); zeros(sigLength-size(currSig,1)-nZeros,1)];
+    if doNormalization
+        % Normalize signal by its maximum value
+        signals(:,ii) = signals(:,ii) ./ (max(abs(signals(:,ii)))+eps);
+    end
 end
-
