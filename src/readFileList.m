@@ -3,13 +3,13 @@ function [fileNames,nFiles] = readFileList(fileList)
 %
 % Usage: [fileNames,nFiles] = readFileList(fileList)
 %
-% readFileList(fileList) returns a cell containing all the files stort in the
-% file fileList. A filList can be created under Linux the following way. Assume
+% readFileList(fileList) returns a cell containing all the files stored in the
+% file fileList. A fileList can be created under Linux the following way. Assume
 % we want to have all files in the subdir "training1" listed in the fileList
 % "training1.flist", then run:
 % $ ls training1/* > training1.flist
 %
-% Dependency: WP1
+% Dependency: Two!Ears Binaural Simulator
 
 % TODO: expand this function to handle more than one given file list.
 
@@ -28,4 +28,3 @@ nFiles = length(fileNames);
 
 % Clean up
 fclose(fid);
-clear tmp;
