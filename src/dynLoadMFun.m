@@ -7,5 +7,5 @@ fid = fopen( [tmpmfile '.m'], 'w' );
 fprintf( fid, '%s', fstr );
 fclose( fid );
 fh = str2func( tmpmfile );
-tmpmpath = fullfile( [pwd '\' tmpmfile '.m'] );
+tmpmpath = fullfile( [pwd filesep tmpmfile '.m'] );
 param = v.param;
