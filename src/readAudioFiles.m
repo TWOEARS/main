@@ -73,11 +73,12 @@ if nargout>1
         error('The Two!Ears WP3 module needs to be loaded.');
     end
     for ii = 1:nFiles
-        idTruth.class = IdEvalFrame.readEventClass( audioFiles{ii} );
-        idTruth.onsetsOffsets = ...
+        labels(ii).filename = audioFiles{ii};
+        labels(ii).class = IdEvalFrame.readEventClass( audioFiles{ii} );
+        labels(ii).onsetsOffsets = ...
             IdEvalFrame.readOnOffAnnotations(audioFiles{ii}) + nZeros/fsDesired;
-        idTruth.onsetsOffsets(idTruth.onsetsOffsets(:,1) == inf,:) = [];
-        idTruth.onsetsOffsets(idTruth.onsetsOffsets(:,2) == inf,:) = [];
+        labels(ii).onsetsOffsets(labels(ii).onsetsOffsets(:,1) == inf,:) = [];
+        labels(ii).onsetsOffsets(labels(ii).onsetsOffsets(:,2) == inf,:) = [];
     end
     varargout{2} = labels;
 end
