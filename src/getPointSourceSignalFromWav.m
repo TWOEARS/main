@@ -1,6 +1,7 @@
 function sourceWavSignal = getPointSourceSignalFromWav( wavName, targetFs, zeroOffsetLength_s )
 
 [sourceWavSignal,wavFs] = audioread( wavName );
+sourceWavSignal = single( sourceWavSignal ); % single is good enough for wav data
 
 % Stereo signals don't make sense. 
 if ~isvector( sourceWavSignal )
