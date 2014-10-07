@@ -5,7 +5,7 @@
 basepath = fileparts(mfilename('fullpath'));
 
 % Add all relevant folders to the matlab search path
-addpath(fullfile(basepath, 'args'));
-addpath(fullfile(basepath, '.'));
+addpath(fullfile(basepath, 'src'));
+addpath(fullfile(basepath, 'src', filesep, 'args'));
 
 clear basepath;
