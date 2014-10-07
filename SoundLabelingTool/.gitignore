@@ -1,7 +1,0 @@
-*.asv
-/labeling_settings.mat
-*.aux
-*.blg
-/doc/SELT.log
-*.out
-/doc/SELT.pdf
