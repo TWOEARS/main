@@ -53,8 +53,8 @@ end
 signals = zeros(sigLength,nFiles);
 % Loop over number of audio files
 for ii = 1:nFiles
-    % Read ii-th signal
-    [currSig,fs] = audioread(audioFiles{ii});
+    % Read ii-th signal, usingthe same precission as the original file
+    [currSig,fs] = audioread(audioFiles{ii},'native');
     % Mono downsampling and resampling, if required
     currSig = forceMono(resample(currSig,fsDesired,fs),downmixMethod);
     % Add zeros at the end to match longest signal
@@ -70,7 +70,7 @@ varargout{1} = signals;
 if nargout>1
     % Check if function is loaded
     if ~which('IdEvalFrame')
-        error('The Two!Ears WP3 module needs to be loaded.');
+        error('The Two!Ears Blackboard System module needs to be loaded.');
     end
     for ii = 1:nFiles
         labels(ii).filename = audioFiles{ii};
