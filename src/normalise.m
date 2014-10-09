@@ -1,5 +1,5 @@
-function signal = normalize(signal)
-% normalize(signal) normalizes the amplitude of the given signal to the range of
+function signal = normalise(signal)
+% normalise(signal) normalises the amplitude of the given signal to the range of
 % ]-1:1[.
 
 % AUTHOR: Hagen Wierstorf
