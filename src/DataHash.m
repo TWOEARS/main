@@ -1,4 +1,7 @@
 function H = DataHash(Data, maxRecursionLevel)
+%DATAHASH ...
+% TODO: add description
+
 if ~exist( 'maxRecursionLevel', 'var' ), maxRecursionLevel = 10; end;
 Engine = java.security.MessageDigest.getInstance('MD5');
 H = CoreHash(Data, Engine, 0, maxRecursionLevel);
