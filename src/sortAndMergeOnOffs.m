@@ -21,7 +21,7 @@ onOffs = sortrows( onOffs );
 kk = 1;
 while kk < size( onOffs, 1 )
     if onOffs(kk,2) >= onOffs(kk+1,1)
-        onOffs(kk,2) = onOffs(kk+1,2);
+        onOffs(kk,2) = max( onOffs(kk,2), onOffs(kk+1,2) );
         onOffs(kk+1,:) = [];
     else
         kk = kk + 1;
