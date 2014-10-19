@@ -1,54 +1,74 @@
-function H = DataHash(Data, maxRecursionLevel)
-if ~exist( 'maxRecursionLevel', 'var' ), maxRecursionLevel = 10; end;
-Engine = java.security.MessageDigest.getInstance('MD5');
-H = CoreHash(Data, Engine, 0, maxRecursionLevel);
-H = sprintf('%.2x', H);   % To hex string
+function hash = DataHash( data, maxRecursionLevel )
 
-function H = CoreHash(Data, Engine, recursionLevel, maxRecursionLevel )
+if ~exist( 'maxRecursionLevel', 'var' ), maxRecursionLevel = 10; end;
+Engine = java.security.MessageDigest.getInstance( 'MD5' );
+hash = CoreHash( data, Engine, 0, maxRecursionLevel );
+hash = sprintf( '%.2x', hash );   % To hex string
+
+end
+
+function hash = CoreHash( data, Engine, recursionLevel, maxRecursionLevel )
 
 % Consider the type of empty arrays:
-S = [class(Data), sprintf('%d ', size(Data))];
+S = [class(data), sprintf('%d ', size(data))];
 Engine.update(typecast(uint16(S(:)), 'uint8'));
-H = double(typecast(Engine.digest, 'uint8'));
+hash = double(typecast(Engine.digest, 'uint8'));
 
 if recursionLevel > maxRecursionLevel, return; end;
 
-if isa(Data, 'struct')
-   n = numel(Data);
-   if n == 1  % Scalar struct:
-      F = sort(fieldnames(Data));  % ignore order of fields
-      for iField = 1:length(F)
-         H = bitxor(H, CoreHash(Data.(F{iField}), Engine, recursionLevel + 1, maxRecursionLevel));
-      end
-   else  % Struct array:
-      for iS = 1:n
-         H = bitxor(H, CoreHash(Data(iS), Engine, recursionLevel + 1, maxRecursionLevel));
-      end
-   end
-elseif isempty(Data)
-   % No further actions needed
-elseif isnumeric(Data)
-   if ~isreal(Data)
-       Data = [real(Data), imag(Data)];
-   end
-   Engine.update(typecast(Data(:), 'uint8'));
-   H = bitxor(H, double(typecast(Engine.digest, 'uint8')));
-elseif ischar(Data)  % Silly TYPECAST cannot handle CHAR
-   Engine.update(typecast(uint16(Data(:)), 'uint8'));
-   H = bitxor(H, double(typecast(Engine.digest, 'uint8')));
-elseif iscell(Data)
-   for iS = 1:numel(Data)
-      H = bitxor(H, CoreHash(Data{iS}, Engine, recursionLevel + 1, maxRecursionLevel));
-   end
-elseif islogical(Data)
-   Engine.update(typecast(uint8(Data(:)), 'uint8'));
-   H = bitxor(H, double(typecast(Engine.digest, 'uint8')));
-elseif isa(Data, 'function_handle')
-   H = bitxor(H, CoreHash(functions(Data), Engine, recursionLevel + 1, maxRecursionLevel));
-elseif isobject(Data)
-   for p = properties(Data)'
-      H = bitxor(H, CoreHash({Data.(p{1})}, Engine, recursionLevel + 1, maxRecursionLevel));
-   end
+if isa( data, 'struct' )
+    n = numel(data);
+    if n == 1  % Scalar struct:
+        F = sort(fieldnames(data));  % ignore order of fields
+        for iField = 1:length(F)
+            hash = bitxor(hash, CoreHash(data.(F{iField}), Engine, recursionLevel + 1, maxRecursionLevel));
+        end
+    else  % Struct array:
+        for iS = 1:n
+            hash = bitxor(hash, CoreHash(data(iS), Engine, recursionLevel + 1, maxRecursionLevel));
+        end
+    end
+elseif isempty( data )
+    % No further actions needed
+elseif isnumeric( data )
+    if ~isreal( data )
+        data = [real(data), imag(data)];
+    end
+    Engine.update(typecast(data(:), 'uint8'));
+    hash = bitxor(hash, double(typecast(Engine.digest, 'uint8')));
+elseif ischar( data )  % Silly TYPECAST cannot handle CHAR
+    Engine.update(typecast(uint16(data(:)), 'uint8'));
+    hash = bitxor(hash, double(typecast(Engine.digest, 'uint8')));
+elseif iscell( data )
+    for iS = 1:numel(data)
+        hash = bitxor(hash, CoreHash(data{iS}, Engine, recursionLevel + 1, maxRecursionLevel));
+    end
+elseif islogical( data )
+    Engine.update(typecast(uint8(data(:)), 'uint8'));
+    hash = bitxor(hash, double(typecast(Engine.digest, 'uint8')));
+elseif isa( data, 'function_handle' )
+    hash = bitxor(hash, CoreHash(functions(data), Engine, recursionLevel + 1, maxRecursionLevel));
+elseif isa( data, 'Hashable' )
+    for ii = 1:numel( data )
+        hash = bitxor( hash, CoreHash( data(ii).getHashObjects(), Engine, recursionLevel + 1, maxRecursionLevel ) );
+    end
+elseif isobject( data )
+    for ii = 1:numel( data )
+        mcdata = metaclass( data(ii) );
+        propsData = mcdata.PropertyList;
+        warning off MATLAB:structOnObject
+        propsStruct = struct( data(ii) );
+        warning on MATLAB:structOnObject
+        pNames = sort( {propsData.Name} );
+        for pname = pNames
+            p = propsData(strcmp( {propsData.Name}, pname{1} ));
+            if p.Transient, continue; end
+            if ~isfield( propsStruct, p.Name ), continue; end
+            hash = bitxor(hash, CoreHash(propsStruct.(p.Name), Engine, recursionLevel + 1, maxRecursionLevel));
+        end
+    end
 else
-   warning(['Type of variable not considered: ', class(Data)]);
+    warning( ['Type of variable not considered: ', class(data)] );
+end
+
 end
