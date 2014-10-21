@@ -1,4 +1,6 @@
 function hash = calcDataHash( data, maxRecursionLevel )
+%CALCDATAHASH ...
+% TODO: add description
 
 if ~exist( 'maxRecursionLevel', 'var' ), maxRecursionLevel = 10; end;
 engine = java.security.MessageDigest.getInstance( 'MD5' );
