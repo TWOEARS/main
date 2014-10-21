@@ -5,9 +5,11 @@ function [fileNames,nFiles] = readFileList(fileList)
 %
 % readFileList(fileList) returns a cell containing all the files stored in the
 % file fileList. A fileList can be created under Linux the following way. Assume
-% we want to have all files in the subdir "training1" listed in the fileList
-% "training1.flist", then run:
-% $ ls training1/* > training1.flist
+% we want to have all files in the subdir "sound_databases/database1/training1"
+% listed in the fileList "training1.flist", then run:
+% $ ls -d -1 sound_databases/database1/training1/**/* > training1.flist
+% Note, that you always have to start with a path at the root of the Two!Ears
+% data repository.
 %
 % Dependency: Two!Ears Binaural Simulator
 
@@ -20,10 +22,9 @@ narginchk(1,1);
 
 % Reading the file list
 fileList = fullfile(xml.dbPath, fileList);
-[fileListPath,~,~] = fileparts(fileList);
 fid = fopen(fileList);
 tmp = textscan(fid, '%s');
-fileNames = strcat(fileListPath,filesep,tmp{1});
+fileNames = strcat(xml.dbPath,tmp{1});
 nFiles = length(fileNames);
 
 % Clean up

@@ -1,11 +1,9 @@
-
 % This script initialises the path variables that are needed for running
 % the Tools code.
 
-basepath = fileparts(mfilename('fullpath'));
+basePath = [fileparts(mfilename('fullpath')) filesep];
 
 % Add all relevant folders to the matlab search path
-addpath(fullfile(basepath, 'args'));
-addpath(fullfile(basepath, '.'));
+addpath([basePath 'args']);
 
-clear basepath;
+clear basePath;
