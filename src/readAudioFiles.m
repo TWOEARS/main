@@ -12,7 +12,7 @@ function varargout = readAudioFiles(audioFiles,varargin)
 %       'Normalize'    - Normalize output signals to -1..1, default: false
 %       'Zeropadding'  - Adds nSamples of zeros at the beginning and end, default: 0
 %       'Length'       - Specifies length of output signals, default: maximum of
-%                        input signals
+%                        input signals. In samples.
 %       'Method'       - Specifies downmix method for mono downmix. See
 %                        `help forceMono` for available options, default: 'downmix'
 
@@ -43,7 +43,7 @@ if nargout>1, doLabels=true; else doLabels=false; end
 nFiles = numel(audioFiles);
 % Get information about all signals
 for ii = 1:nFiles
-    info(ii) = audioinfo(audioFiles{ii});
+    info(ii) = audioinfo(xml.dbGetFile(audioFiles{ii}));
 end
 % Set length of signal in samples if not specified
 if isempty(sigLength)
@@ -54,7 +54,7 @@ signals = zeros(sigLength,nFiles);
 % Loop over number of audio files
 for ii = 1:nFiles
     % Read ii-th signal, usingthe same precission as the original file
-    [currSig,fs] = audioread(audioFiles{ii},'native');
+    [currSig,fs] = audioread(xml.dbGetFile(audioFiles{ii}),'double');
     % Mono downsampling and resampling, if required
     currSig = forceMono(resample(currSig,fsDesired,fs),downmixMethod);
     % Add zeros at the end to match longest signal
