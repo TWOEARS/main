@@ -15,17 +15,23 @@ classdef (HandleCompatible) Parameterized
     methods (Access = protected)
 
         function obj = Parameterized( parameterDefinitions )
-            obj.inParser = inputParser();
+            if ~isa( obj.inParser, 'inputParser' ) 
+                obj.inParser = inputParser();
+            end
             obj.inParser.StructExpand = true;
             for ii = 1 : length( parameterDefinitions )
                 pd = parameterDefinitions{ii};
-                obj.inParser.addParameter( pd.name, pd.default, pd.valFun );
-                if isfield( pd, 'setCallback' )
-                    obj.setCallbacks.(pd.name) = pd.setCallback;
-                end
+                obj.addParameterDefinition( pd );
             end
         end
         %% -------------------------------------------------------------------------------
+        
+        function obj = addParameterDefinition( obj, pd )
+            obj.inParser.addParameter( pd.name, pd.default, pd.valFun );
+            if isfield( pd, 'setCallback' )
+                obj.setCallbacks.(pd.name) = pd.setCallback;
+            end
+        end
 
     end
     
