@@ -6,7 +6,7 @@
 % nL l-moments for given data vector X. 
 % Return the l-moments as vector L.
 
-function [L] = lMoments(X,nL)
+function [L] = lMoments(X,nL,scaleNl2)
 
 [rows cols] = size(X);
 if cols == 1 X = X'; end
@@ -33,3 +33,6 @@ end
 
 L = [b0 l];
 
+if nargin > 2 && nL > 2 && scaleNl2
+    L(3:end) = L(3:end) ./ L(2);
+end
