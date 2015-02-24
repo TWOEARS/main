@@ -33,6 +33,7 @@ end
 
 L = [b0 l];
 
-if nargin > 2 && nL > 2 && scaleNl2
+if nargin > 2 && nL > 2 && scaleNl2 && L(2) ~= 0
     L(3:end) = L(3:end) ./ L(2);
 end
+
