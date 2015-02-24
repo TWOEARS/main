@@ -22,6 +22,9 @@ narginchk(1,1);
 
 % Reading the file list
 fileList = fullfile(xml.dbPath, fileList);
+if ~exist(fileList,'file')
+    error('Non-existing file: %s.',fileList);
+end
 fid = fopen(fileList);
 tmp = textscan(fid, '%s');
 fileNames = strcat(xml.dbPath,tmp{1});

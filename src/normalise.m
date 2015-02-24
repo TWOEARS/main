@@ -6,4 +6,4 @@ function signal = normalise(signal)
 
 narginchk(1,1);
 % Scaling the signal to -1<sig<1
-sig = sig / (max(abs(sig(:)))+eps);
+signal = signal / (max(abs(signal(:)))+eps);
