@@ -8,6 +8,9 @@
 
 function [L] = lMoments(X,nL,scaleNl2)
 
+selectNl = nL;
+nL = max( nL );
+
 [rows cols] = size(X);
 if cols == 1 X = X'; end
 n = length(X);
@@ -33,6 +36,8 @@ end
 
 L = [b0 l];
 
-if nargin > 2 && nL > 2 && scaleNl2
+if nargin > 2 && nL > 2 && scaleNl2 && L(2) ~= 0
     L(3:end) = L(3:end) ./ L(2);
 end
+
+L = L(selectNl);
