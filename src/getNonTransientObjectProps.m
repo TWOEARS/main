@@ -9,7 +9,7 @@ pNames = sort( {propsData.Name} );
 objProps = {};
 for pname = pNames
     p = propsData(strcmp( {propsData.Name}, pname{1} ));
-    if p.Transient, continue; end
+    if p.Transient | p.Hidden, continue; end
     if ~isfield( propsStruct, p.Name ), continue; end
     objProps{end+1} = propsStruct.(p.Name);
 end
