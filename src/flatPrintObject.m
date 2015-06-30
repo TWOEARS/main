@@ -7,7 +7,9 @@ sc(:,2) = stringifyCell( sc(:,2) );
 names = char( sc(:,1) );
 for ii = 1 : size( sc, 1 )
     cprintf( '*Black', '\t%s\t', names(ii,:) );
-    fprintf( '%s\n', sc{ii,2} );
+    val = sc{ii,2};
+    if ~isempty( val ), val = val(1:min(1000,length(val))); end;
+    fprintf( '%s\n', val );
 end
 
 end
