@@ -74,7 +74,10 @@ for jj = 1:size(c,2)
         c(kk,jj) = {strcat( a{:} )};
     end
     if isobject( c{kk,jj} ) && ~isempty( c{kk,jj} )
-        c{kk,jj} = 'NOT IMPLEMENTED'; % TODO
+        warning off MATLAB:structOnObject
+        propsCell = {struct( c{kk,jj} )};
+        warning on MATLAB:structOnObject
+        c{kk,jj} = stringifyCell( propsCell );
     end
     if isa( c{kk,jj}, 'struct' )
         if isempty( fieldnames( c{kk,jj} ) )
