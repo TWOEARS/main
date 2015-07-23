@@ -24,7 +24,11 @@ narginchk(1,1);
 fileList = xml.dbGetFile(fileList);
 fid = fopen(fileList);
 tmp = textscan(fid, '%s');
-fileNames = strcat(xml.dbPath,tmp{1});
+dbpath = xml.dbPath();
+if dbpath(end) ~= '/'  && dbpath(end) ~= '\'
+    dbpath(end+1) = filesep;
+end
+fileNames = strcat(dbpath,tmp{1});
 nFiles = length(fileNames);
 
 % Clean up
