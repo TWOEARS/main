@@ -13,6 +13,8 @@ for ii = 1 : (numel( sepPos ) - 1)
         else
             cp(end+1:end+sepPos(ii+1)-sepPos(ii)) = p(sepPos(ii)+1:sepPos(ii+1));
         end
+    elseif sepPos(ii+1) - sepPos(ii) < 2
+        continue
     else
         lenPartBefore(end+1) = sepPos(ii+1) - sepPos(ii);
         cp(end+1:end+lenPartBefore(end)) = p(sepPos(ii)+1:sepPos(ii+1));
