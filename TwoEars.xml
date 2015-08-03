@@ -9,7 +9,6 @@ startTwoEars('TwoEarsPart.xml'). -->
 <requirements>
     <TwoEarsPart sub="src"    startup="startBinauralSimulator">binaural-simulator</TwoEarsPart>
     <TwoEarsPart sub="API_MO" startup="SOFAstart">sofa</TwoEarsPart>
-    <TwoEarsPart sub="src"    startup="startTools">tools</TwoEarsPart>
     <TwoEarsPart              startup="startAuditoryFrontEnd">auditory-front-end</TwoEarsPart>
     <TwoEarsPart              startup="startBlackboardSystem">blackboard-system</TwoEarsPart>
 </requirements>
