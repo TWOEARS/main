@@ -19,10 +19,12 @@ if ~ischar(configFile)
     error('configFile needs to be a string');
 end
 
-% Add current folder and the startup folder
+% Add current folder and the src folders
 TwoEarsPath = fileparts(mfilename('fullpath'));
 addpath(TwoEarsPath);
-addpath(fullfile(TwoEarsPath, 'TwoEarsStartup'));
+addpath(fullfile(TwoEarsPath, 'src', 'TwoEarsStartup'));
+addpath(fullfile(TwoEarsPath, 'src', 'args'));
+addpath(fullfile(TwoEarsPath, 'src', 'misc'));
 
 % Display version information and finish if asked to do so
 if strcmp('info', configFile)
