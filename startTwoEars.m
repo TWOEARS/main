@@ -24,7 +24,7 @@ TwoEarsPath = fileparts(mfilename('fullpath'));
 addpath(TwoEarsPath);
 addpath(fullfile(TwoEarsPath, 'src', 'TwoEarsStartup'));
 addpath(fullfile(TwoEarsPath, 'src', 'args'));
-addpath(fullfile(TwoEarsPath, 'src', 'misc'));
+addpath(fullfile(TwoEarsPath, 'src', 'tools'));
 
 % Display version information and finish if asked to do so
 if strcmp('info', configFile)
