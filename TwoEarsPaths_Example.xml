@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Configuration file for the Two!Ears auditory model -->
+
+<!-- In the following entries please specify the pathes were you have stored the
+     corresponding repositories on your local disk. Note, that depending of your
+     apllication it can be the case that you only need some of those repositories.
+     If this is the case the entries for the other ones will be ignored. -->
+
+<repoPaths>
+    <!-- https://github.com/TWOEARS/binaural-simulator -->
+    <binaural-simulator>~/git/twoears/binaural-simulator</binaural-simulator>
+    <!-- https://github.com/TWOEARS/auditory-front-end -->
+    <auditory-front-end>~/git/twoears/auditory-front-end</auditory-front-end>
+    <!-- https://github.com/TWOEARS/blackboard-system -->
+    <blackboard-system>~/git/twoears/blackboard-system</blackboard-system>
+    <identification-training>~/git/twoears/identification-training</identification-training>
+    <!-- https://github.com/TWOEARS/SOFA -->
+    <sofa>~/git/twoears/SOFA</sofa>
+    <!-- https://github.com/TWOEARS/tools -->
+    <tools>~/git/twoears/twoears-tools</tools>
+</repoPaths>
