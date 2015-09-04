@@ -14,6 +14,7 @@ classdef (HandleCompatible) Parameterized
                 obj.inParser = inputParser();
             end
             obj.inParser.StructExpand = true;
+            if nargin < 1, return; end
             for ii = 1 : length( parameterDefinitions )
                 pd = parameterDefinitions{ii};
                 obj.addParameterDefinition( pd );
