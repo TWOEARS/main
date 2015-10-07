@@ -19,6 +19,7 @@ end
 
 function offAndSave()
 
+fprintf( '\n\nsaving profile\n\n' );
 profile( 'off' );
 p = profile('info');
 
