@@ -10,12 +10,18 @@ else
     profile on -timer cpu
 end
 
-cleaner = onCleanup( @() profile( 'off' ) );
+cleaner = onCleanup( @offAndSave );
 
 fh( varargin{:} );
 
+end
+
+
+function offAndSave()
+
+profile( 'off' );
 p = profile('info');
 
 save( ['profile_results' buildCurrentTimeString() '.mat'], 'p' );
 
-
+end
