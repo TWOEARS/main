@@ -172,7 +172,7 @@ function      [data, result]= readtext(text, delimiter, comment, quotes, options
 	if(~isempty(opts.comment))									% Remove comments.
 		text=	regexprep(text, ['^\' opts.comment '[^' eol ']*' eol], '');	% Remove entire commented lines. 
         text=   regexprep(text, ['\' opts.comment '[^' eol ']*' eol], '');  % This helps to remove several lines
-		text=	regexprep(text, [ '\' opts.comment '[^' eol ']*'], '')		% Remove commented line endings. 
+		text=	regexprep(text, [ '\' opts.comment '[^' eol ']*'], '');		% Remove commented line endings. 
 	end
 	if(isempty(text) || text(end) ~= eol),	text= [text eol];	end	% End string with eol, if none.
 	
