@@ -29,5 +29,5 @@ for cLinIdx = 1 : numel( c )
     end
 end
 
-cs = squeeze( cs );
+% cs = squeeze( cs );
 cs = cellfun( fn, cs );
