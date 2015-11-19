@@ -1,4 +1,6 @@
-function cs = cellSqueezeFun( fn, c, dim )
+function cs = cellSqueezeFun( fn, c, dim, nonUniformOut )
+
+if nargin < 4, nonUniformOut = false; end
 
 szC = size( c );
 szCs = szC;
@@ -29,5 +31,4 @@ for cLinIdx = 1 : numel( c )
     end
 end
 
-% cs = squeeze( cs );
-cs = cellfun( fn, cs );
+cs = cellfun( fn, cs, 'UniformOutput', ~nonUniformOut );
