@@ -22,9 +22,9 @@ end
 % Add current folder and the src folders
 TwoEarsPath = fileparts(mfilename('fullpath'));
 addpath(TwoEarsPath);
-addpath(fullfile(TwoEarsPath, 'src', 'TwoEarsStartup'));
-addpath(fullfile(TwoEarsPath, 'src', 'args'));
-addpath(fullfile(TwoEarsPath, 'src', 'tools'));
+addpath(fullfile(TwoEarsPath, 'Tools', 'TwoEarsStartup'));
+addpath(fullfile(TwoEarsPath, 'Tools', 'args'));
+addpath(fullfile(TwoEarsPath, 'Tools', 'misc'));
 
 % Display version information and finish if asked to do so
 if strcmp('info', configFile)
