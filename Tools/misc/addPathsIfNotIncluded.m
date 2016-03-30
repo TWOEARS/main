@@ -4,7 +4,7 @@ function addPathsIfNotIncluded( newPathes )
 % circumvent any unnecessary addpath call.
 
 if ~iscell( newPathes ), newPathes = {newPathes}; end
-pathes = strsplit( path, ';' );
+pathes = strsplit( path, pathsep );
 isNewPathNotYetIncluded = cellfun( @(np)(~any( strcmp( np, pathes ) )), newPathes );
 newPathes = newPathes(isNewPathNotYetIncluded);
 

@@ -21,10 +21,11 @@ end
 
 % Add current folder and the src folders
 TwoEarsPath = fileparts(mfilename('fullpath'));
+addpath( fullfile(TwoEarsPath, 'Tools', 'misc') );
 addPathsIfNotIncluded( {TwoEarsPath,...
                         fullfile(TwoEarsPath, 'Tools', 'TwoEarsStartup'),...
-                        fullfile(TwoEarsPath, 'Tools', 'args'),...
-                        fullfile(TwoEarsPath, 'Tools', 'misc')} );
+                        fullfile(TwoEarsPath, 'Tools', 'args')...
+                        } );
 
 % Display version information and finish if asked to do so
 if strcmp('info', configFile)

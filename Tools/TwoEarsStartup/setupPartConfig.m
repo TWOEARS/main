@@ -30,7 +30,7 @@ for k = 1:length(reposNeeded)
     % Adding subs with all subfolders
     if recursiveSubsNeeded{k}
         pathsToBeAdded = [pathsToBeAdded ...
-               strsplit( genpath( fullfile( repoPath, recursiveSubsNeeded{k} ) ), ';' ) ];
+               strsplit( genpath( fullfile( repoPath, recursiveSubsNeeded{k} ) ), pathsep ) ];
     end
     % Execute startup function
     if ~isempty( startupNeeded{k} )
