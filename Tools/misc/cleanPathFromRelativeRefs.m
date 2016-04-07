@@ -21,3 +21,5 @@ for ii = 1 : (numel( sepPos ) - 1)
         cp(end+1:end+lenPartBefore(end)) = p(sepPos(ii)+1:sepPos(ii+1));
     end
 end
+
+cp = fullfile( cp );
