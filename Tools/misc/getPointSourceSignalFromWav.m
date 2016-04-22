@@ -1,10 +1,11 @@
-function sourceWavSignal = getPointSourceSignalFromWav( wavName, targetFs, zeroOffsetLength_s, normalize )
+function sourceWavSignal = getPointSourceSignalFromWav( wavName, targetFs, zeroOffsetLength_s, normalize, downmixMethod )
 
 [sourceWavSignal,wavFs] = audioread( wavName );
 
 % Stereo signals don't make sense. 
 if ~isvector( sourceWavSignal )
-    sourceWavSignal = mean( sourceWavSignal, 2 );
+    if nargin < 5, downmixMethod = 'downmix'; end % power and spectral leakage?
+    sourceWavSignal = forceMono( sourceWavSignal, downmixMethod );
 end
 
 % Resample source signal if required
