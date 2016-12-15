@@ -14,7 +14,7 @@
     <!-- https://github.com/TWOEARS/blackboard-system -->
     <blackboard-system>~/git/twoears/blackboard-system</blackboard-system>
     <!-- https://github.com/TWOEARS/identification-training -->
-    <identification-training>~/git/twoears/identification-training</identification-training>
+    <machine-learning-training>~/git/twoears/amlttp</machine-learning-training>
     <!-- https://github.com/TWOEARS/SOFA -->
     <sofa>~/git/twoears/SOFA</sofa>
 </repoPaths>
