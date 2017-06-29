@@ -1,5 +1,11 @@
 function eq = isequalDeepCompare( a, b )
 
+if isnumeric( a ) && islogical( b )
+    b = feval( class( a ), b );
+elseif isnumeric( b ) && islogical( a )
+    a = feval( class( b ), a );
+end
+
 if ~isequal( class( a ), class( b ) ), eq = false; return; end
 
 if isa( a, 'struct' )
