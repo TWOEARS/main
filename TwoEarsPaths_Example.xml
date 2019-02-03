@@ -13,8 +13,10 @@
     <auditory-front-end>~/git/twoears/auditory-front-end</auditory-front-end>
     <!-- https://github.com/TWOEARS/blackboard-system -->
     <blackboard-system>~/git/twoears/blackboard-system</blackboard-system>
-    <!-- https://github.com/TWOEARS/identification-training -->
+    <!-- https://github.com/TWOEARS/Auditory-Machine-Learning-Training-and-Testing-Pipeline -->
     <machine-learning-training>~/git/twoears/amlttp</machine-learning-training>
+    <!-- https://github.com/TWOEARS/stream-segregation-training-pipeline -->
+    <spatial-segregation-training>~/git/twoears/stream-segregation-training-pipeline</spatial-segregation-training>
     <!-- https://github.com/TWOEARS/SOFA -->
     <sofa>~/git/twoears/SOFA</sofa>
 </repoPaths>
