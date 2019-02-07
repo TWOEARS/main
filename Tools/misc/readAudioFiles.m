@@ -45,10 +45,6 @@ if nargout>1, doLabels=true; else doLabels=false; end
 %% === Read audio files ===
 % Number of audio files
 nFiles = numel(audioFiles);
-% Get information about all signals
-for ii = 1:nFiles
-    info(ii) = audioinfo(db.getFile(audioFiles{ii}));
-end
 signals = cell([nFiles 1]);
 if ~isempty( parser.Results.Length )
     sigLength(1:nFiles) = parser.Results.Length;
@@ -57,14 +53,14 @@ else
 end
 % Loop over number of audio files
 for ii = 1:nFiles
-    % Set length of signal in samples if not specified
-    if isinf(sigLength(ii))
-        sigLength(ii) = round(info(ii).Duration*fsDesired) + 2*nZeros;
-    end
     % Read ii-th signal, usingthe same precission as the original file
     [currSig,fs] = audioread(db.getFile(audioFiles{ii}),'double');
     % Mono downsampling and resampling, if required
     currSig = forceMono(resample(currSig,fsDesired,fs),downmixMethod);
+    % Set length of signal in samples if not specified
+    if isinf(sigLength(ii))
+        sigLength(ii) = round(fsDesired*length(currSig)/fs) + 2*nZeros;
+    end
     % Add zeros at the end to match longest signal
     signals{ii} = [zeros(nZeros,1); ...
                    currSig(1:min(end,sigLength(ii)-2*nZeros)); ...
@@ -88,22 +84,19 @@ end
 if nargout>1
     % Check if function is loaded
     if ~which('IdEvalFrame')
-        error('The Two!Ears Blackboard System module needs to be loaded.');
+        error('The Two!Ears Auditory Machine Learning Training and Testing Pipeline (AMLTTP) needs to be loaded.');
     end
     for ii = 1:nFiles
         labels(ii).filename = audioFiles{ii};
-        labels(ii).onsetsOffsets = ...
-            IdEvalFrame.readOnOffAnnotations(audioFiles{ii}) + nZeros/fsDesired;
-        if ~isempty(labels(ii).onsetsOffsets)
-            labels(ii).class = repmat( IdEvalFrame.readEventClass( audioFiles{ii} ), ...
-                                       size( labels(ii).onsetsOffsets, 1 ), 1 );
-        else
-            labels(ii).class = [];
-        end
+        [labels(ii).onsetsOffsets,labels(ii).class] = ...
+            IdEvalFrame.readOnOffAnnotations(audioFiles{ii});
+        labels(ii).onsetsOffsets = labels(ii).onsetsOffsets + nZeros/fsDesired;
         labels(ii).cumOnsetsOffsets = ...
             labels(ii).onsetsOffsets + sum(sigLength(1:ii-1))/fsDesired;
         labels(ii).onsetsOffsets(labels(ii).onsetsOffsets(:,1) == inf,:) = [];
         labels(ii).onsetsOffsets(labels(ii).onsetsOffsets(:,2) == inf,:) = [];
+        labels(ii).class(cellfun( @isempty, labels(ii).class )) = {IdEvalFrame.readEventClass(audioFiles{ii})};
+        assert( numel( labels(ii).class ) == size( labels(ii).onsetsOffsets, 1 ) );
     end
     varargout{2} = labels;
 end
